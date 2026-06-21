@@ -12,6 +12,10 @@ This folder contains manuals and reference documents for the SkyScan 1272 Micro-
 - `methods-and-special-topics/` — methods writing help and specialized workflows
 - files left directly in `manuals/` — uncategorized or general reference items
 
+## Current repository state
+
+At present, most PDF files are still stored directly in the `manuals/` folder, while the categorized subfolders and links below reflect the intended target organization.
+
 ## File index
 
 ### scanner-and-software-manuals
