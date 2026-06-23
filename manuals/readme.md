@@ -40,6 +40,13 @@ This folder contains manuals and reference documents for the SkyScan 1272 Micro-
 - [xray filters in microCT imaging](./MN148_xray%20filters%20in%20microCT%20imaging.pdf)
 - [X-ray Imaging and MicroCT](./X-ray%20Imaging%20and%20MicroCT%20-%202014-07-18%20reduced%20size.pdf)
 
+### MTS stage manuals
+- [How to add a sample in the large pull sample holder](./How%20to%20add%20a%20sample%20in%20the%20large%20pull%20sample%20holder.pdf)
+- [MTS2 user guide v1.0](./MTS2%20user%20guide%20v1.0.pdf)
+- [MTS2 user guide V2](./MTS2%20user%20guide%20V2.pdf)
+- [MTS2 user guide V2_01](./MTS2%20user%20guide%20V2_01.pdf)
+- [MN054 MTS2 user guide V2_1](./MN054%20MTS2%20user%20guide%20V2_1.pdf)
+
 ### Visualization and output
 - [From scan to 3D print](./MN081_From%20scan%20to%203D%20print.pdf)
 - [Tips & Tricks For Images & Movies](./MN087_Tips%20%26%20Tricks%20For%20Images%20%26%20Movies.pdf)
