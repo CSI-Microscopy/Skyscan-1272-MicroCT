@@ -449,10 +449,10 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
           <table class="data">
             <thead><tr><th>δ/β</th><th>Smoothing length</th><th>Bright rim</th><th>Noise in air</th><th>What it looks like</th></tr></thead>
             <tbody id="fly-table">
-              <tr data-db="0"><td class="n">off</td><td class="n L">–</td><td class="n rim">+3.4%</td><td class="n noise">1.02%</td><td>Fringe at every edge, grainy</td></tr>
-              <tr data-db="600" class="best"><td class="n">600</td><td class="n L">9.2 µm (1.1 px)</td><td class="n rim">–</td><td class="n noise">–</td><td>Matches the average edge of the whole scan (Part 3); this sharp head edge keeps part of its rim</td></tr>
-              <tr data-db="2000"><td class="n">2000</td><td class="n L">16.8 µm (2.1 px)</td><td class="n rim">−0.2%</td><td class="n noise">0.36%</td><td>Rim gone at this edge, the sharpest in the scan; about 3× more than the average edge needs</td></tr>
-              <tr data-db="8000"><td class="n">8000</td><td class="n L">33.6 µm (4.1 px)</td><td class="n rim">−1.3%</td><td class="n noise">0.21%</td><td>Edge smeared into the air, fine structure blurred away</td></tr>
+              <tr data-fly-db="0"><td class="n">off</td><td class="n L">–</td><td class="n rim">+3.4%</td><td class="n noise">1.02%</td><td>Fringe at every edge, grainy</td></tr>
+              <tr data-fly-db="600" class="best"><td class="n">600</td><td class="n L">9.2 µm (1.1 px)</td><td class="n rim">–</td><td class="n noise">–</td><td>Matches the average edge of the whole scan (Part 3); this sharp head edge keeps part of its rim</td></tr>
+              <tr data-fly-db="2000"><td class="n">2000</td><td class="n L">16.8 µm (2.1 px)</td><td class="n rim">−0.2%</td><td class="n noise">0.36%</td><td>Rim gone at this edge, the sharpest in the scan; about 3× more than the average edge needs</td></tr>
+              <tr data-fly-db="8000"><td class="n">8000</td><td class="n L">33.6 µm (4.1 px)</td><td class="n rim">−1.3%</td><td class="n noise">0.21%</td><td>Edge smeared into the air, fine structure blurred away</td></tr>
             </tbody>
           </table>
         </div>
@@ -474,9 +474,9 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
         <div class="note">
           <strong>Reading these results</strong>
           <ul>
-            <li>The phase fringe in this scan is weak: about 3% against 1% noise at the sharpest edge of the head, and only 0.21% averaged over all clean edges (Part 3, Test 5). That is expected for 8.15 µm pixels at 100 kV: a Fresnel number near 37 means fringes are thin compared with a pixel.</li>
+            <li>The phase fringe in this scan is weak: about 3% against 1% noise at the sharpest edge of the head, and only 0.21% averaged over all clean edges (Part 3, Test 5). <span class="tag">Inference</span> That is expected for 8.15 µm pixels at 100 kV: a Fresnel number near 37 means fringes are thin compared with a pixel.</li>
             <li>On this projection the rim at the head edge disappears only at δ/β ≈ 2000. Averaged over clean edges in 180 projections, the fringe disappears at δ/β ≈ 580. A single sharp edge overstates what the whole sample needs, by about 3× here.</li>
-            <li><span class="tag">Unverified</span> The 30 keV effective energy is an estimate for 100 kV with no filter. A different assumed energy rescales the δ/β number for the same filter, so in NRecon the reliable criterion is visual: raise δ/β on a preview slice until the edge rims just disappear.</li>
+            <li><span class="tag">Unverified</span> The 30 keV effective energy is an estimate for 100 kV with no filter. A different assumed energy rescales the δ/β number for the same filter: a program assuming energy E needs δ/β × E / 30 keV. Part 5 explains how to carry the value over to NRecon.</li>
             <li>The steel pin is far denser than the fly. Paganin assumes one material, so the pin and its surroundings will look wrong after retrieval. The fly cuticle is what the setting is tuned for.</li>
             <li>This is one projection. In a reconstruction the same filter is applied to all 1800 projections first. Part 3 measures what that does to the slices.</li>
           </ul>
@@ -621,7 +621,7 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
             <div class="ctl-top"><label for="cx-en">Assumed energy</label><output id="cx-en-v" for="cx-en"></output></div>
             <input type="range" id="cx-en" min="20" max="60" step="1" value="30">
           </div>
-          <dl class="readout" aria-live="polite">
+          <dl class="readout">
             <dt>Same filter at 30 keV</dt><dd id="cx-r30">–</dd>
             <dt>Smoothing length √c</dt><dd id="cx-L">–</dd>
             <dt>Kept at 20 µm period</dt><dd id="cx-20">–</dd>
@@ -740,17 +740,17 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
           </div>
           <div class="vp-cell">
             <div class="t"><i style="background: var(--raw)"></i>No phase retrieval</div>
-            <div class="vp-view" tabindex="0" aria-label="Close-up without phase retrieval. Drag or use arrow keys to move."><img data-vp-key="none" src="assets/phase-retrieval/vol_690_none.png" width="320" height="320" alt="Close-up, no phase retrieval" draggable="false"></div>
+            <div class="vp-view" role="group" tabindex="0" aria-label="Close-up without phase retrieval. Drag or use arrow keys to move."><img data-vp-key="none" src="assets/phase-retrieval/vol_690_none.png" width="320" height="320" alt="Close-up, no phase retrieval" draggable="false"></div>
             <div class="d"><span class="mono">noise 9.8 · CNR 30 · 40 µm kept 100%</span></div>
           </div>
           <div class="vp-cell">
             <div class="t"><i style="background: var(--pag)"></i>Paganin δ/β 600</div>
-            <div class="vp-view" tabindex="0" aria-label="Close-up with Paganin 600. Drag or use arrow keys to move."><img data-vp-key="p600" src="assets/phase-retrieval/vol_690_p600.png" width="320" height="320" alt="Close-up, Paganin 600" draggable="false"></div>
+            <div class="vp-view" role="group" tabindex="0" aria-label="Close-up with Paganin 600. Drag or use arrow keys to move."><img data-vp-key="p600" src="assets/phase-retrieval/vol_690_p600.png" width="320" height="320" alt="Close-up, Paganin 600" draggable="false"></div>
             <div class="d"><span class="mono">noise 4.0 · CNR 68 · 40 µm kept 29%</span></div>
           </div>
           <div class="vp-cell">
             <div class="t"><i style="background: var(--ink)"></i>Paganin δ/β 1600</div>
-            <div class="vp-view" tabindex="0" aria-label="Close-up with Paganin 1600. Drag or use arrow keys to move."><img data-vp-key="p1600" src="assets/phase-retrieval/vol_690_p1600.png" width="320" height="320" alt="Close-up, Paganin 1600" draggable="false"></div>
+            <div class="vp-view" role="group" tabindex="0" aria-label="Close-up with Paganin 1600. Drag or use arrow keys to move."><img data-vp-key="p1600" src="assets/phase-retrieval/vol_690_p1600.png" width="320" height="320" alt="Close-up, Paganin 1600" draggable="false"></div>
             <div class="d"><span class="mono">noise 2.4 · CNR 109 · 40 µm kept 14%</span></div>
           </div>
         </div>
@@ -794,15 +794,17 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
           <li>Check that the scan folder still has the raw projection images and the matching <code>.log</code>. Phase retrieval works on projections, so reconstructed slices alone are not enough.</li>
           <li>Open the dataset in NRecon 2.0 or newer. Bruker's distributor describes phase retrieval as new in 2.0. The fly scan was reconstructed with NRecon 2.1.0.2 on the facility PC, so the option should be there.</li>
           <li>Turn on phase retrieval and enter δ/β. The distances and pixel size come from the <code>.log</code> automatically. <span class="tag">Unverified</span> We could not confirm the menu name; Bruker method note MN133 has the walk-through.</li>
-          <li>Preview one slice with phase retrieval off, then raise δ/β until the bright and dark lines at the outer edges just disappear. That is the matched value (about 600 on our 30 keV scale for the fly). Steps of about 2× are a practical way to bracket it.</li>
-          <li>Go higher only for extra smoothing before segmentation. Beyond the matched value the filter only smooths, much as NRecon's Smoothing option would.</li>
-          <li>Set NRecon's separate Smoothing option to 0 while phase retrieval is on, to avoid smoothing twice.</li>
+          <li>Choose δ/β from the fringe, not from the halo in the slices. The dark band along edges in reconstructed slices is mostly not phase contrast: it disappears only near δ/β 3200 (Test 3), about 5× past the fringe-matched value, so tuning until it vanishes over-smooths. On this scan the true fringe (0.21%) is also below the pixel noise, so there is no reliable visual endpoint. Start from the measured value instead: δ/β ≈ 580 at an assumed 30 keV.</li>
+          <li><span class="tag">Unverified</span> Carry the value over to NRecon's scale. The same filter needs δ/β × E / 30 keV in a program that assumes energy E (about 390 at 20 keV). If NRecon does not state the energy it assumes, the factor is unknown: bracket the value in 2× steps and compare each preview with the no-filter preview.</li>
+          <li>Go above the matched value only for the noise level a segmentation needs (Test 3 table); beyond it the filter only smooths. On each preview, check the finest structures: if thin cuticle lines blur or edges smear into the air, lower δ/β.</li>
+          <li><span class="tag">Inference</span> Set NRecon's separate Smoothing option to 0 while phase retrieval is on. Both are low-pass filters, so using both smooths twice. We did not test how NRecon combines them.</li>
           <li>Reconstruct the full stack and report δ/β, and the assumed energy if NRecon shows one, in the methods section.</li>
         </ol>
         <div class="note">
           <strong>For this fly dataset</strong>
+          <span>Values on our 30 keV scale; multiply by E / 30 keV for a program that assumes energy E.</span>
           <ul>
-            <li><strong>Segmenting soft tissue</strong> (flight muscle, gut, fat body): δ/β ≈ 1600 on our scale. CNR rises from 30 to about 110.</li>
+            <li><strong>Segmenting soft tissue</strong> (flight muscle, gut, fat body): δ/β ≈ 1600. CNR rises from 30 to about 110.</li>
             <li><strong>Fine cuticle structure</strong> (setae, thin sclerites, wing veins): no phase retrieval, or a weak one (≈ 600) with a sharper reconstruction window.</li>
             <li><strong>Both:</strong> reconstruct twice, segment tissue on the phase-retrieved volume and measure cuticle on the standard one. Both come from the same projections, so they are aligned slice for slice.</li>
           </ul>
@@ -921,7 +923,7 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
           </details>
           <details>
             <summary>5. The single head edge in Part 2 needed δ/β ≈ 2000, but the average edge needed 580. Which is right?</summary>
-            <p>Paganin's method assumes one material, so one δ/β cannot match every edge. The sharp head edge has the strongest fringe in the scan; the average over many clean edges represents the sample as a whole. Tuning on the most striking edge over-smooths everything else, which is why we tune on many edges, or by eye on a whole preview slice.</p>
+            <p>Paganin's method assumes one material, so one δ/β cannot match every edge. The sharp head edge has the strongest fringe in the scan; the average over many clean edges represents the sample as a whole. Tuning on the most striking edge over-smooths everything else, which is why we measure the fringe over many edges rather than judging it by eye on one.</p>
           </details>
           <details>
             <summary>6. Halving the number of projections raised noise 2.4× instead of 1.4×. Where does the extra come from?</summary>
@@ -1503,6 +1505,8 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
   FLY.zEff = (FLY.os / 1000) * ((FLY.cs - FLY.os) / 1000) / (FLY.cs / 1000);
   FLY.lambda = 1.23984e-6 / (FLY.keV * 1000);
   FLY.p = FLY.px * 1e-6;
+  // Paganin c = z_eff · δ/β · λ / 4π (m²) for the fly scan geometry; λ in m
+  const paganinC = (db, lambda) => FLY.zEff * db * lambda / (4 * Math.PI);
 
   // Decode 16-bit little-endian pixels and convert to transmission (pixel / Reference Intensity)
   let flyT, flyF, FLY_K2, FLY_WIN, flyRawProfile, flyRawNoise, flyRawRim, flyRe, flyIm, flyOut;
@@ -1552,7 +1556,7 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
   function flyFilter(db) {
     const P = FLY.P, n = P * P;
     if (db <= 0) return flyT;
-    const c = FLY.zEff * db * FLY.lambda / (4 * Math.PI);
+    const c = paganinC(db, FLY.lambda);
     const cpix = c / (FLY.p * FLY.p);
     const re = flyRe, im = flyIm, out = flyOut; // reused buffers
     for (let i = 0; i < n; i++) { const h = 1 / (1 + cpix * FLY_K2[i]); re[i] = flyF.re[i] * h; im[i] = flyF.im[i] * h; }
@@ -1611,7 +1615,7 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
   function renderFly() {
     const db = flyDbExact !== null ? flyDbExact : flyDbFromSlider(+$("fly-db").value);
     const out = flyFilter(db);
-    const c = FLY.zEff * db * FLY.lambda / (4 * Math.PI), L = Math.sqrt(c);
+    const c = paganinC(db, FLY.lambda), L = Math.sqrt(c);
     $("fly-db-v").textContent = db > 0 ? fmt(db, 0) : "off";
     $("fly-L").textContent = db > 0 ? `${fmt(L * 1e6, 1)} µm (${fmt(L / FLY.p, 1)} px)` : "–";
     $("fly-noise").textContent = `${fmt(flyNoise(out), 2)}% (raw ${fmt(flyRawNoise, 2)}%)`;
@@ -1641,8 +1645,8 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
     flyRe = new Float64Array(n); flyIm = new Float64Array(n); flyOut = new Float64Array(FLY.S * FLY.S);
     flyRawProfile = flyProfile(flyT); flyRawNoise = flyNoise(flyT); flyRawRim = flyRim(flyRawProfile);
     // Fill the results table from the same filter the slider uses
-    for (const tr of document.querySelectorAll("#fly-table tr[data-db]")) {
-      const db = +tr.dataset.db, out = flyFilter(db), L = Math.sqrt(FLY.zEff * db * FLY.lambda / (4 * Math.PI));
+    for (const tr of document.querySelectorAll("#fly-table tr[data-fly-db]")) {
+      const db = +tr.dataset.flyDb, out = flyFilter(db), L = Math.sqrt(paganinC(db, FLY.lambda));
       tr.querySelector(".L").textContent = db > 0 ? `${fmt(L * 1e6, 1)} µm (${fmt(L / FLY.p, 1)} px)` : "–";
       tr.querySelector(".rim").textContent = pct(flyRim(flyProfile(out)));
       tr.querySelector(".noise").textContent = fmt(flyNoise(out), 2) + "%";
@@ -1669,141 +1673,146 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
     io.observe(document.querySelector('section[aria-labelledby="h-fly"]'));
   } else startFly();
 
+  // Parts 3-4: theory-against-measurement explorer and the synced three-volume close-up panel
+  (() => {
+
+    // ---------- explorer: Paganin transfer H = 1 / (1 + c k²) for the fly scan geometry ----------
+    const PX = FLY.px, MATCH30 = 580;
+    // Test 3 measurements (four-slice averages): δ/β at 30 keV → fraction kept at 40 µm and 80 µm period
+    const MEAS = { 50: [.8295, .9452], 100: [.7082, .8967], 200: [.5471, .8139], 400: [.375, .6874], 800: [.2313, .5246],
+      1600: [.1352, .3565], 3200: [.0786, .2184], 6400: [.0466, .1257], 12800: [.0293, .0710], 25600: [.0193, .0399] };
+    const svg = $("cx-plot");
+    const W = 640, H = 300, L = 46, R = 14, T = 14, B = 40;
+    const X0 = 1, X1 = 3;                                     // log10 of 10 µm and 1000 µm
+    const sx = d => L + (Math.log10(d) - X0) / (X1 - X0) * (W - L - R);
+    const sy = v => T + (1 - v) * (H - T - B);
+    const cOf = (db, E) => paganinC(db, 1.23984e-6 / (E * 1000)) * 1e12;   // µm², assumed energy E in keV
+    const Hk = (c, d) => 1 / (1 + c * Math.pow(2 * Math.PI / d, 2));
+    const el = (tag, attrs, text) => {
+      const e = document.createElementNS(NS, tag);
+      for (const k in attrs) e.setAttribute(k, attrs[k]);
+      if (text !== undefined) e.textContent = text;
+      svg.appendChild(e); return e;
+    };
+    const curve = c => {
+      let p = "";
+      for (let i = 0; i <= 160; i++) { const d = Math.pow(10, X0 + (X1 - X0) * i / 160); p += (i ? "L" : "M") + sx(d).toFixed(1) + " " + sy(Hk(c, d)).toFixed(1); }
+      return p;
+    };
+    el("rect", { class: "cx-band", x: L, y: T, width: sx(2 * PX) - L, height: H - T - B });
+    el("text", { x: L + 4, y: T + 12 }, "finer than");
+    el("text", { x: L + 4, y: T + 25 }, "2 pixels");
+    for (const v of [0, 0.25, 0.5, 0.75, 1]) {
+      el("line", { class: "grid", x1: L, x2: W - R, y1: sy(v), y2: sy(v) });
+      el("text", { x: L - 6, y: sy(v) + 4, "text-anchor": "end" }, String(v));
+    }
+    for (const d of [10, 20, 40, 80, 160, 320, 640]) {
+      el("line", { class: "grid", x1: sx(d), x2: sx(d), y1: T, y2: H - B });
+      el("text", { x: sx(d), y: H - B + 16, "text-anchor": "middle" }, String(d));
+    }
+    el("line", { class: "ax", x1: L, x2: W - R, y1: H - B, y2: H - B });
+    el("line", { class: "ax", x1: L, x2: L, y1: T, y2: H - B });
+    el("text", { x: (L + W - R) / 2, y: H - 6, "text-anchor": "middle" }, "period of the detail (µm, log scale)");
+    el("text", { x: 12, y: (T + H - B) / 2, "text-anchor": "middle", transform: `rotate(-90 12 ${(T + H - B) / 2})` }, "fraction kept");
+    el("path", { class: "s-truth", d: curve(cOf(MATCH30, 30)) });
+    const live = el("path", { class: "s-pag", d: "" });
+    const dots = [0, 1].map(() => el("circle", { class: "cx-dot", r: 5 }));
+
+    const dbFrom = v => 50 * Math.pow(25600 / 50, v / 1000);
+    const nice = v => v >= 1000 ? Math.round(v / 10) * 10 : Math.round(v);
+    const pct = v => (v * 100).toFixed(v < 0.1 ? 1 : 0) + "%";
+    function updateExplorer() {
+      const db = dbFrom(+$("cx-db").value), E = +$("cx-en").value, c = cOf(db, E), db30 = db * 30 / E, Lc = Math.sqrt(c);
+      $("cx-db-v").textContent = nice(db);
+      $("cx-en-v").textContent = E + " keV";
+      live.setAttribute("d", curve(c));
+      $("cx-r30").textContent = nice(db30);
+      $("cx-L").textContent = `${Lc.toFixed(1)} µm · ${(Lc / PX).toFixed(2)} px`;
+      $("cx-20").textContent = pct(Hk(c, 20)); $("cx-40").textContent = pct(Hk(c, 40)); $("cx-80").textContent = pct(Hk(c, 80));
+      let best = null;
+      for (const k of Object.keys(MEAS).map(Number)) {
+        if (Math.abs(db30 / k - 1) <= 0.2 && (best === null || Math.abs(db30 / k - 1) < Math.abs(db30 / best - 1))) best = k;
+      }
+      dots.forEach((dot, i) => {
+        if (best === null) { dot.setAttribute("visibility", "hidden"); return; }
+        dot.setAttribute("visibility", "visible");
+        dot.setAttribute("cx", sx([40, 80][i])); dot.setAttribute("cy", sy(MEAS[best][i]));
+      });
+      $("cx-m").textContent = best === null ? "none nearby" : `${best} (30 keV)`;
+    }
+    $("cx-db").addEventListener("input", updateExplorer);
+    $("cx-en").addEventListener("input", updateExplorer);
+    updateExplorer();
+
+    // ---------- volume panel: one region, three volumes, shared zoom and pan ----------
+    // close-up box as fractions of the overview image: [top, left, size] (from s13_volume_panel.py)
+    const BOX = { 690: [0.4428, 0.2460, 0.3936], 786: [0.4797, 0.1599, 0.3936], 600: [0.4182, 0.2460, 0.3936] };
+    const CAP = {
+      690: "In the thorax, look at the flight-muscle bundles: the grain in the tissue fades from left to right, and so do the thinnest cuticle lines.",
+      786: "In the head, compare the thin cuticle walls on the left with the smooth tissue inside the capsule: the walls soften as the noise drops.",
+      600: "In the abdomen the steel pin (bright, top left) throws streaks. Phase retrieval smooths them but cannot remove them, because Paganin assumes one material.",
+    };
+    const vp = { sec: 690, zoom: 2, u: 0.5, v: 0.45 };
+    const views = [...document.querySelectorAll("#vp .vp-view")];
+    const clampC = (x) => { const h = 1 / (2 * vp.zoom); return Math.min(1 - h, Math.max(h, x)); };
+    function placeViews() {
+      vp.u = clampC(vp.u); vp.v = clampC(vp.v);
+      for (const view of views) {
+        const img = view.querySelector("img");
+        img.style.width = `${vp.zoom * 100}%`;
+        img.style.left = `${50 - vp.u * vp.zoom * 100}%`;
+        img.style.top = `${50 - vp.v * vp.zoom * 100}%`;
+      }
+      const [t, l, s] = BOX[vp.sec], box = $("vp-box"), win = $("vp-win");
+      box.style.top = `${t * 100}%`; box.style.left = `${l * 100}%`; box.style.width = box.style.height = `${s * 100}%`;
+      const w = 100 / vp.zoom;
+      win.style.width = win.style.height = `${w}%`;
+      win.style.left = `${(vp.u - 0.5 / vp.zoom) * 100}%`; win.style.top = `${(vp.v - 0.5 / vp.zoom) * 100}%`;
+      win.hidden = vp.zoom === 1;
+    }
+    let pending = 0;
+    function setSection(sec) {
+      const ticket = ++pending;
+      const imgs = [$("vp-ov-img"), ...views.map(v => v.querySelector("img"))];
+      const srcs = imgs.map(img => `assets/phase-retrieval/vol_${sec}_${img.dataset.vpKey || "overview"}.png`);
+      // load all four first, so the panel never mixes two regions
+      Promise.all(srcs.map(src => new Promise(done => { const im = new Image(); im.onload = im.onerror = done; im.src = src; }))).then(() => {
+        if (ticket !== pending) return;                  // a newer click won
+        imgs.forEach((img, i) => { img.src = srcs[i]; });
+        vp.sec = sec;
+        $("vp-cap").textContent = "Noise in ×10⁻³ mm⁻¹; numbers are four-slice averages from Tests 3 and 6. " + CAP[sec];
+        placeViews();
+      });
+    }
+    const press = (sel, btn) => document.querySelectorAll(sel).forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
+    document.querySelectorAll("[data-vp-sec]").forEach(b => b.addEventListener("click", () => { press("[data-vp-sec]", b); setSection(+b.dataset.vpSec); }));
+    document.querySelectorAll("[data-vp-zoom]").forEach(b => b.addEventListener("click", () => { press("[data-vp-zoom]", b); vp.zoom = +b.dataset.vpZoom; placeViews(); }));
+    for (const view of views) {
+      let drag = null;
+      view.addEventListener("pointerdown", e => {
+        if (!e.isPrimary || e.button !== 0) return;
+        drag = { x: e.clientX, y: e.clientY }; view.setPointerCapture(e.pointerId);
+      });
+      view.addEventListener("pointermove", e => {
+        if (!drag) return;
+        const size = view.clientWidth * vp.zoom;
+        vp.u -= (e.clientX - drag.x) / size; vp.v -= (e.clientY - drag.y) / size;
+        drag = { x: e.clientX, y: e.clientY }; placeViews();
+      });
+      const end = () => { drag = null; };
+      view.addEventListener("pointerup", end); view.addEventListener("pointercancel", end);
+      view.addEventListener("keydown", e => {
+        const step = 0.1 / vp.zoom, d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+        if (!d) return;
+        e.preventDefault(); vp.u += d[0]; vp.v += d[1]; placeViews();
+      });
+    }
+    placeViews();
+  })();
+
   render();
 })();
 </script>
 
-<script>
-// Parts 3-4: theory-against-measurement explorer and the synced three-volume close-up panel
-(() => {
-  const $ = id => document.getElementById(id);
-  const NS = "http://www.w3.org/2000/svg";
-
-  // ---------- explorer: Paganin transfer H = 1 / (1 + c k²) for the fly scan geometry ----------
-  const Z_UM = 43020, PX = 8.152, MATCH30 = 580;
-  // Test 3 measurements (four-slice averages): δ/β at 30 keV → fraction kept at 40 µm and 80 µm period
-  const MEAS = { 50: [.8295, .9452], 100: [.7082, .8967], 200: [.5471, .8139], 400: [.375, .6874], 800: [.2313, .5246],
-    1600: [.1352, .3565], 3200: [.0786, .2184], 6400: [.0466, .1257], 12800: [.0293, .0710], 25600: [.0193, .0399] };
-  const svg = $("cx-plot");
-  const W = 640, H = 300, L = 46, R = 14, T = 14, B = 40;
-  const X0 = 1, X1 = 3;                                     // log10 of 10 µm and 1000 µm
-  const sx = d => L + (Math.log10(d) - X0) / (X1 - X0) * (W - L - R);
-  const sy = v => T + (1 - v) * (H - T - B);
-  const lam = E => 1.23984e-3 / E;                          // wavelength in µm, E in keV
-  const cOf = (db, E) => Z_UM * db * lam(E) / (4 * Math.PI);
-  const Hk = (c, d) => 1 / (1 + c * Math.pow(2 * Math.PI / d, 2));
-  const el = (tag, attrs, text) => {
-    const e = document.createElementNS(NS, tag);
-    for (const k in attrs) e.setAttribute(k, attrs[k]);
-    if (text !== undefined) e.textContent = text;
-    svg.appendChild(e); return e;
-  };
-  const curve = c => {
-    let p = "";
-    for (let i = 0; i <= 160; i++) { const d = Math.pow(10, X0 + (X1 - X0) * i / 160); p += (i ? "L" : "M") + sx(d).toFixed(1) + " " + sy(Hk(c, d)).toFixed(1); }
-    return p;
-  };
-  el("rect", { class: "cx-band", x: L, y: T, width: sx(2 * PX) - L, height: H - T - B });
-  el("text", { x: L + 4, y: T + 12 }, "finer than");
-  el("text", { x: L + 4, y: T + 25 }, "2 pixels");
-  for (const v of [0, 0.25, 0.5, 0.75, 1]) {
-    el("line", { class: "grid", x1: L, x2: W - R, y1: sy(v), y2: sy(v) });
-    el("text", { x: L - 6, y: sy(v) + 4, "text-anchor": "end" }, String(v));
-  }
-  for (const d of [10, 20, 40, 80, 160, 320, 640]) {
-    el("line", { class: "grid", x1: sx(d), x2: sx(d), y1: T, y2: H - B });
-    el("text", { x: sx(d), y: H - B + 16, "text-anchor": "middle" }, String(d));
-  }
-  el("line", { class: "ax", x1: L, x2: W - R, y1: H - B, y2: H - B });
-  el("line", { class: "ax", x1: L, x2: L, y1: T, y2: H - B });
-  el("text", { x: (L + W - R) / 2, y: H - 6, "text-anchor": "middle" }, "period of the detail (µm, log scale)");
-  el("text", { x: 12, y: (T + H - B) / 2, "text-anchor": "middle", transform: `rotate(-90 12 ${(T + H - B) / 2})` }, "fraction kept");
-  el("path", { class: "s-truth", d: curve(cOf(MATCH30, 30)) });
-  const live = el("path", { class: "s-pag", d: "" });
-  const dots = [0, 1].map(() => el("circle", { class: "cx-dot", r: 5 }));
-
-  const dbFrom = v => 50 * Math.pow(25600 / 50, v / 1000);
-  const nice = v => v >= 1000 ? Math.round(v / 10) * 10 : Math.round(v);
-  const pct = v => (v * 100).toFixed(v < 0.1 ? 1 : 0) + "%";
-  function updateExplorer() {
-    const db = dbFrom(+$("cx-db").value), E = +$("cx-en").value, c = cOf(db, E), db30 = db * 30 / E, Lc = Math.sqrt(c);
-    $("cx-db-v").textContent = nice(db);
-    $("cx-en-v").textContent = E + " keV";
-    live.setAttribute("d", curve(c));
-    $("cx-r30").textContent = nice(db30);
-    $("cx-L").textContent = `${Lc.toFixed(1)} µm · ${(Lc / PX).toFixed(2)} px`;
-    $("cx-20").textContent = pct(Hk(c, 20)); $("cx-40").textContent = pct(Hk(c, 40)); $("cx-80").textContent = pct(Hk(c, 80));
-    let best = null;
-    for (const k of Object.keys(MEAS).map(Number)) {
-      const r = Math.abs(Math.log(db30 / k));
-      if (r < Math.log(1.2) && (best === null || r < Math.abs(Math.log(db30 / best)))) best = k;
-    }
-    dots.forEach((dot, i) => {
-      if (best === null) { dot.setAttribute("visibility", "hidden"); return; }
-      dot.setAttribute("visibility", "visible");
-      dot.setAttribute("cx", sx([40, 80][i])); dot.setAttribute("cy", sy(MEAS[best][i]));
-    });
-    $("cx-m").textContent = best === null ? "none nearby" : `${best} (30 keV)`;
-  }
-  $("cx-db").addEventListener("input", updateExplorer);
-  $("cx-en").addEventListener("input", updateExplorer);
-  updateExplorer();
-
-  // ---------- volume panel: one region, three volumes, shared zoom and pan ----------
-  // close-up box as fractions of the overview image: [top, left, size] (from s13_volume_panel.py)
-  const BOX = { 690: [0.4428, 0.2460, 0.3936], 786: [0.4797, 0.1599, 0.3936], 600: [0.4182, 0.2460, 0.3936] };
-  const CAP = {
-    690: "In the thorax, look at the flight-muscle bundles: the grain in the tissue fades from left to right, and so do the thinnest cuticle lines.",
-    786: "In the head, compare the thin cuticle walls on the left with the smooth tissue inside the capsule: the walls soften as the noise drops.",
-    600: "In the abdomen the steel pin (bright, top left) throws streaks. Phase retrieval smooths them but cannot remove them, because Paganin assumes one material.",
-  };
-  const vp = { sec: 690, zoom: 2, u: 0.5, v: 0.45 };
-  const views = [...document.querySelectorAll("#vp .vp-view")];
-  const clampC = (x) => { const h = 1 / (2 * vp.zoom); return Math.min(1 - h, Math.max(h, x)); };
-  function placeViews() {
-    vp.u = clampC(vp.u); vp.v = clampC(vp.v);
-    for (const view of views) {
-      const img = view.querySelector("img");
-      img.style.width = `${vp.zoom * 100}%`;
-      img.style.left = `${50 - vp.u * vp.zoom * 100}%`;
-      img.style.top = `${50 - vp.v * vp.zoom * 100}%`;
-    }
-    const [t, l, s] = BOX[vp.sec], box = $("vp-box"), win = $("vp-win");
-    box.style.top = `${t * 100}%`; box.style.left = `${l * 100}%`; box.style.width = box.style.height = `${s * 100}%`;
-    const w = 100 / vp.zoom;
-    win.style.width = win.style.height = `${w}%`;
-    win.style.left = `${(vp.u - 0.5 / vp.zoom) * 100}%`; win.style.top = `${(vp.v - 0.5 / vp.zoom) * 100}%`;
-    win.hidden = vp.zoom === 1;
-  }
-  function setSection(sec) {
-    vp.sec = sec;
-    $("vp-ov-img").src = `assets/phase-retrieval/vol_${sec}_overview.png`;
-    for (const view of views) { const img = view.querySelector("img"); img.src = `assets/phase-retrieval/vol_${sec}_${img.dataset.vpKey}.png`; }
-    $("vp-cap").textContent = "Noise in ×10⁻³ mm⁻¹; numbers are four-slice averages from Tests 3 and 6. " + CAP[sec];
-    placeViews();
-  }
-  const press = (sel, btn) => document.querySelectorAll(sel).forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
-  document.querySelectorAll("[data-vp-sec]").forEach(b => b.addEventListener("click", () => { press("[data-vp-sec]", b); setSection(+b.dataset.vpSec); }));
-  document.querySelectorAll("[data-vp-zoom]").forEach(b => b.addEventListener("click", () => { press("[data-vp-zoom]", b); vp.zoom = +b.dataset.vpZoom; placeViews(); }));
-  for (const view of views) {
-    let drag = null;
-    view.addEventListener("pointerdown", e => { drag = { x: e.clientX, y: e.clientY }; view.setPointerCapture(e.pointerId); });
-    view.addEventListener("pointermove", e => {
-      if (!drag) return;
-      const size = view.clientWidth * vp.zoom;
-      vp.u -= (e.clientX - drag.x) / size; vp.v -= (e.clientY - drag.y) / size;
-      drag = { x: e.clientX, y: e.clientY }; placeViews();
-    });
-    const end = () => { drag = null; };
-    view.addEventListener("pointerup", end); view.addEventListener("pointercancel", end);
-    view.addEventListener("keydown", e => {
-      const step = 0.1 / vp.zoom, d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
-      if (!d) return;
-      e.preventDefault(); vp.u += d[0]; vp.v += d[1]; placeViews();
-    });
-  }
-  placeViews();
-})();
-</script>
 </body>
 </html>
