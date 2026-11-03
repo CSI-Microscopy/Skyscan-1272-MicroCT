@@ -232,6 +232,7 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 .vp-view:focus-visible { outline: 2px solid var(--pag); outline-offset: 2px; }
 .vp-view img { position: absolute; max-width: none; height: auto; image-rendering: pixelated; pointer-events: none; }
 
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .qs { display: grid; }
 .qs details { border-top: 1px solid var(--line); padding: 10px 0; }
 .qs details:last-child { border-bottom: 1px solid var(--line); }
@@ -449,10 +450,10 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
           <table class="data">
             <thead><tr><th>δ/β</th><th>Smoothing length</th><th>Bright rim</th><th>Noise in air</th><th>What it looks like</th></tr></thead>
             <tbody id="fly-table">
-              <tr data-fly-db="0"><td class="n">off</td><td class="n L">–</td><td class="n rim">+3.4%</td><td class="n noise">1.02%</td><td>Fringe at every edge, grainy</td></tr>
-              <tr data-fly-db="600" class="best"><td class="n">600</td><td class="n L">9.2 µm (1.1 px)</td><td class="n rim">–</td><td class="n noise">–</td><td>Matches the average edge of the whole scan (Part 3); this sharp head edge keeps part of its rim</td></tr>
-              <tr data-fly-db="2000"><td class="n">2000</td><td class="n L">16.8 µm (2.1 px)</td><td class="n rim">−0.2%</td><td class="n noise">0.36%</td><td>Rim gone at this edge, the sharpest in the scan; about 3× more than the average edge needs</td></tr>
-              <tr data-fly-db="8000"><td class="n">8000</td><td class="n L">33.6 µm (4.1 px)</td><td class="n rim">−1.3%</td><td class="n noise">0.21%</td><td>Edge smeared into the air, fine structure blurred away</td></tr>
+              <tr data-result-db="0"><td class="n">off</td><td class="n L">–</td><td class="n rim">+3.4%</td><td class="n noise">1.02%</td><td>Fringe at every edge, grainy</td></tr>
+              <tr data-result-db="600" class="best"><td class="n">600</td><td class="n L">9.2 µm (1.1 px)</td><td class="n rim">–</td><td class="n noise">–</td><td>Matches the average edge of the whole scan (Part 3); this sharp head edge keeps part of its rim</td></tr>
+              <tr data-result-db="2000"><td class="n">2000</td><td class="n L">16.8 µm (2.1 px)</td><td class="n rim">−0.2%</td><td class="n noise">0.36%</td><td>Rim gone at this edge, the sharpest in the scan; about 3× more than the average edge needs</td></tr>
+              <tr data-result-db="8000"><td class="n">8000</td><td class="n L">33.6 µm (4.1 px)</td><td class="n rim">−1.3%</td><td class="n noise">0.21%</td><td>Edge smeared into the air, fine structure blurred away</td></tr>
             </tbody>
           </table>
         </div>
@@ -621,6 +622,7 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
             <div class="ctl-top"><label for="cx-en">Assumed energy</label><output id="cx-en-v" for="cx-en"></output></div>
             <input type="range" id="cx-en" min="20" max="60" step="1" value="30">
           </div>
+          <p class="sr-only" id="cx-live" aria-live="polite"></p>
           <dl class="readout">
             <dt>Same filter at 30 keV</dt><dd id="cx-r30">–</dd>
             <dt>Smoothing length √c</dt><dd id="cx-L">–</dd>
@@ -629,7 +631,7 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
             <dt>Kept at 80 µm period</dt><dd id="cx-80">–</dd>
             <dt>Measured setting shown</dt><dd id="cx-m">–</dd>
           </dl>
-          <p class="caption">Changing the energy and δ/β together leaves the curve in place whenever their ratio is fixed. Dots are Test 3 measurements, shown when a measured setting is within 20% of the chosen one. They sit slightly below the theory curve, probably because the filter also smooths along the rotation axis.</p>
+          <p class="caption">Changing the energy and δ/β together leaves the curve in place whenever their ratio is fixed. Dots are Test 3 measurements, shown when a measured setting is within a factor of 1.2 of the chosen one. They sit slightly below the theory curve, probably because the filter also smooths along the rotation axis.</p>
         </div>
       </div>
     </section>
@@ -795,7 +797,7 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
           <li>Open the dataset in NRecon 2.0 or newer. Bruker's distributor describes phase retrieval as new in 2.0. The fly scan was reconstructed with NRecon 2.1.0.2 on the facility PC, so the option should be there.</li>
           <li>Turn on phase retrieval and enter δ/β. The distances and pixel size come from the <code>.log</code> automatically. <span class="tag">Unverified</span> We could not confirm the menu name; Bruker method note MN133 has the walk-through.</li>
           <li>Choose δ/β from the fringe, not from the halo in the slices. The dark band along edges in reconstructed slices is mostly not phase contrast: it disappears only near δ/β 3200 (Test 3), about 5× past the fringe-matched value, so tuning until it vanishes over-smooths. On this scan the true fringe (0.21%) is also below the pixel noise, so there is no reliable visual endpoint. Start from the measured value instead: δ/β ≈ 580 at an assumed 30 keV.</li>
-          <li><span class="tag">Unverified</span> Carry the value over to NRecon's scale. The same filter needs δ/β × E / 30 keV in a program that assumes energy E (about 390 at 20 keV). If NRecon does not state the energy it assumes, the factor is unknown: bracket the value in 2× steps and compare each preview with the no-filter preview.</li>
+          <li><span class="tag">Unverified</span> Carry the value over to NRecon's scale. The same filter needs δ/β × E / 30 keV in a program that assumes energy E (about 390 at 20 keV). <span class="tag">Inference</span> If NRecon does not state the energy it assumes, use a check that does not depend on the scale: measure the standard deviation in a uniform patch of air or tissue on the preview, with and without phase retrieval. The fringe-matched filter lowers it about 2.4× on this scan; our δ/β 1600 lowers it about 4× (Test 3). Step δ/β in 2× steps until the ratio matches.</li>
           <li>Go above the matched value only for the noise level a segmentation needs (Test 3 table); beyond it the filter only smooths. On each preview, check the finest structures: if thin cuticle lines blur or edges smear into the air, lower δ/β.</li>
           <li><span class="tag">Inference</span> Set NRecon's separate Smoothing option to 0 while phase retrieval is on. Both are low-pass filters, so using both smooths twice. We did not test how NRecon combines them.</li>
           <li>Reconstruct the full stack and report δ/β, and the assumed energy if NRecon shows one, in the methods section.</li>
@@ -1645,8 +1647,8 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
     flyRe = new Float64Array(n); flyIm = new Float64Array(n); flyOut = new Float64Array(FLY.S * FLY.S);
     flyRawProfile = flyProfile(flyT); flyRawNoise = flyNoise(flyT); flyRawRim = flyRim(flyRawProfile);
     // Fill the results table from the same filter the slider uses
-    for (const tr of document.querySelectorAll("#fly-table tr[data-fly-db]")) {
-      const db = +tr.dataset.flyDb, out = flyFilter(db), L = Math.sqrt(paganinC(db, FLY.lambda));
+    for (const tr of document.querySelectorAll("#fly-table tr[data-result-db]")) {
+      const db = +tr.dataset.resultDb, out = flyFilter(db), L = Math.sqrt(paganinC(db, FLY.lambda));
       tr.querySelector(".L").textContent = db > 0 ? `${fmt(L * 1e6, 1)} µm (${fmt(L / FLY.p, 1)} px)` : "–";
       tr.querySelector(".rim").textContent = pct(flyRim(flyProfile(out)));
       tr.querySelector(".noise").textContent = fmt(flyNoise(out), 2) + "%";
@@ -1673,75 +1675,83 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
     io.observe(document.querySelector('section[aria-labelledby="h-fly"]'));
   } else startFly();
 
-  // Parts 3-4: theory-against-measurement explorer and the synced three-volume close-up panel
-  (() => {
+  render();
 
-    // ---------- explorer: Paganin transfer H = 1 / (1 + c k²) for the fly scan geometry ----------
-    const PX = FLY.px, MATCH30 = 580;
+  // Parts 3-4: theory-against-measurement explorer and the synced three-volume close-up panel.
+  // Runs after the simulator has rendered, and an error here is contained so it cannot blank Parts 1-2.
+  try {
+    // ---------- explorer: Paganin transfer 1 / (1 + c k²) for the fly scan geometry ----------
+    const MATCH30 = 580;
     // Test 3 measurements (four-slice averages): δ/β at 30 keV → fraction kept at 40 µm and 80 µm period
     const MEAS = { 50: [.8295, .9452], 100: [.7082, .8967], 200: [.5471, .8139], 400: [.375, .6874], 800: [.2313, .5246],
       1600: [.1352, .3565], 3200: [.0786, .2184], 6400: [.0466, .1257], 12800: [.0293, .0710], 25600: [.0193, .0399] };
-    const svg = $("cx-plot");
-    const W = 640, H = 300, L = 46, R = 14, T = 14, B = 40;
-    const X0 = 1, X1 = 3;                                     // log10 of 10 µm and 1000 µm
-    const sx = d => L + (Math.log10(d) - X0) / (X1 - X0) * (W - L - R);
-    const sy = v => T + (1 - v) * (H - T - B);
+    const NEAR = 1.2;                                            // show a measurement within a factor of 1.2
+    const cx = $("cx-plot");
+    const PW = 640, PH = 300, ML = 46, MR = 14, MT = 14, MB = 40;
+    const X0 = 1, X1 = 3;                                        // log10 of 10 µm and 1000 µm
+    const sx = d => ML + (Math.log10(d) - X0) / (X1 - X0) * (PW - ML - MR);
+    const sy = v => MT + (1 - v) * (PH - MT - MB);
     const cOf = (db, E) => paganinC(db, 1.23984e-6 / (E * 1000)) * 1e12;   // µm², assumed energy E in keV
-    const Hk = (c, d) => 1 / (1 + c * Math.pow(2 * Math.PI / d, 2));
+    const kept = (c, d) => 1 / (1 + c * Math.pow(2 * Math.PI / d, 2));
     const el = (tag, attrs, text) => {
       const e = document.createElementNS(NS, tag);
       for (const k in attrs) e.setAttribute(k, attrs[k]);
       if (text !== undefined) e.textContent = text;
-      svg.appendChild(e); return e;
+      cx.appendChild(e); return e;
     };
     const curve = c => {
       let p = "";
-      for (let i = 0; i <= 160; i++) { const d = Math.pow(10, X0 + (X1 - X0) * i / 160); p += (i ? "L" : "M") + sx(d).toFixed(1) + " " + sy(Hk(c, d)).toFixed(1); }
+      for (let i = 0; i <= 160; i++) { const d = Math.pow(10, X0 + (X1 - X0) * i / 160); p += (i ? "L" : "M") + sx(d).toFixed(1) + " " + sy(kept(c, d)).toFixed(1); }
       return p;
     };
-    el("rect", { class: "cx-band", x: L, y: T, width: sx(2 * PX) - L, height: H - T - B });
-    el("text", { x: L + 4, y: T + 12 }, "finer than");
-    el("text", { x: L + 4, y: T + 25 }, "2 pixels");
+    el("rect", { class: "cx-band", x: ML, y: MT, width: sx(2 * FLY.px) - ML, height: PH - MT - MB });
+    el("text", { x: ML + 4, y: MT + 12 }, "finer than");
+    el("text", { x: ML + 4, y: MT + 25 }, "2 pixels");
     for (const v of [0, 0.25, 0.5, 0.75, 1]) {
-      el("line", { class: "grid", x1: L, x2: W - R, y1: sy(v), y2: sy(v) });
-      el("text", { x: L - 6, y: sy(v) + 4, "text-anchor": "end" }, String(v));
+      el("line", { class: "grid", x1: ML, x2: PW - MR, y1: sy(v), y2: sy(v) });
+      el("text", { x: ML - 6, y: sy(v) + 4, "text-anchor": "end" }, String(v));
     }
     for (const d of [10, 20, 40, 80, 160, 320, 640]) {
-      el("line", { class: "grid", x1: sx(d), x2: sx(d), y1: T, y2: H - B });
-      el("text", { x: sx(d), y: H - B + 16, "text-anchor": "middle" }, String(d));
+      el("line", { class: "grid", x1: sx(d), x2: sx(d), y1: MT, y2: PH - MB });
+      el("text", { x: sx(d), y: PH - MB + 16, "text-anchor": "middle" }, String(d));
     }
-    el("line", { class: "ax", x1: L, x2: W - R, y1: H - B, y2: H - B });
-    el("line", { class: "ax", x1: L, x2: L, y1: T, y2: H - B });
-    el("text", { x: (L + W - R) / 2, y: H - 6, "text-anchor": "middle" }, "period of the detail (µm, log scale)");
-    el("text", { x: 12, y: (T + H - B) / 2, "text-anchor": "middle", transform: `rotate(-90 12 ${(T + H - B) / 2})` }, "fraction kept");
+    el("line", { class: "ax", x1: ML, x2: PW - MR, y1: PH - MB, y2: PH - MB });
+    el("line", { class: "ax", x1: ML, x2: ML, y1: MT, y2: PH - MB });
+    el("text", { x: (ML + PW - MR) / 2, y: PH - 6, "text-anchor": "middle" }, "period of the detail (µm, log scale)");
+    el("text", { x: 12, y: (MT + PH - MB) / 2, "text-anchor": "middle", transform: `rotate(-90 12 ${(MT + PH - MB) / 2})` }, "fraction kept");
     el("path", { class: "s-truth", d: curve(cOf(MATCH30, 30)) });
     const live = el("path", { class: "s-pag", d: "" });
     const dots = [0, 1].map(() => el("circle", { class: "cx-dot", r: 5 }));
 
     const dbFrom = v => 50 * Math.pow(25600 / 50, v / 1000);
-    const nice = v => v >= 1000 ? Math.round(v / 10) * 10 : Math.round(v);
-    const pct = v => (v * 100).toFixed(v < 0.1 ? 1 : 0) + "%";
+    const share = v => `${fmt(v * 100, v < 0.1 ? 1 : 0)}%`;     // fraction kept → "15%"
+    const dbText = v => fmt(v >= 1000 ? Math.round(v / 10) * 10 : Math.round(v), 0);   // slider steps are not round numbers
     function updateExplorer() {
       const db = dbFrom(+$("cx-db").value), E = +$("cx-en").value, c = cOf(db, E), db30 = db * 30 / E, Lc = Math.sqrt(c);
-      $("cx-db-v").textContent = nice(db);
+      $("cx-db-v").textContent = dbText(db);
       $("cx-en-v").textContent = E + " keV";
       live.setAttribute("d", curve(c));
-      $("cx-r30").textContent = nice(db30);
-      $("cx-L").textContent = `${Lc.toFixed(1)} µm · ${(Lc / PX).toFixed(2)} px`;
-      $("cx-20").textContent = pct(Hk(c, 20)); $("cx-40").textContent = pct(Hk(c, 40)); $("cx-80").textContent = pct(Hk(c, 80));
+      $("cx-r30").textContent = dbText(db30);
+      $("cx-L").textContent = `${fmt(Lc, 1)} µm · ${fmt(Lc / FLY.px, 2)} px`;
+      $("cx-20").textContent = share(kept(c, 20)); $("cx-40").textContent = share(kept(c, 40)); $("cx-80").textContent = share(kept(c, 80));
       let best = null;
       for (const k of Object.keys(MEAS).map(Number)) {
-        if (Math.abs(db30 / k - 1) <= 0.2 && (best === null || Math.abs(db30 / k - 1) < Math.abs(db30 / best - 1))) best = k;
+        const r = Math.abs(Math.log(db30 / k));
+        if (r <= Math.log(NEAR) && (best === null || r < Math.abs(Math.log(db30 / best)))) best = k;
       }
       dots.forEach((dot, i) => {
         if (best === null) { dot.setAttribute("visibility", "hidden"); return; }
         dot.setAttribute("visibility", "visible");
         dot.setAttribute("cx", sx([40, 80][i])); dot.setAttribute("cy", sy(MEAS[best][i]));
       });
-      $("cx-m").textContent = best === null ? "none nearby" : `${best} (30 keV)`;
+      $("cx-m").textContent = best === null ? "none nearby" : `${fmt(best, 0)} (30 keV)`;
+      return `δ/β ${dbText(db)} at ${E} keV: smoothing length ${fmt(Lc, 1)} µm, ${share(kept(c, 40))} kept at 40 µm.`;
     }
-    $("cx-db").addEventListener("input", updateExplorer);
-    $("cx-en").addEventListener("input", updateExplorer);
+    for (const id of ["cx-db", "cx-en"]) {
+      $(id).addEventListener("input", updateExplorer);
+      // one short spoken summary when a change is committed, not on every intermediate step
+      $(id).addEventListener("change", () => { $("cx-live").textContent = updateExplorer(); });
+    }
     updateExplorer();
 
     // ---------- volume panel: one region, three volumes, shared zoom and pan ----------
@@ -1754,7 +1764,7 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
     };
     const vp = { sec: 690, zoom: 2, u: 0.5, v: 0.45 };
     const views = [...document.querySelectorAll("#vp .vp-view")];
-    const clampC = (x) => { const h = 1 / (2 * vp.zoom); return Math.min(1 - h, Math.max(h, x)); };
+    const clampC = x => { const h = 1 / (2 * vp.zoom); return Math.min(1 - h, Math.max(h, x)); };
     function placeViews() {
       vp.u = clampC(vp.u); vp.v = clampC(vp.v);
       for (const view of views) {
@@ -1765,41 +1775,50 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
       }
       const [t, l, s] = BOX[vp.sec], box = $("vp-box"), win = $("vp-win");
       box.style.top = `${t * 100}%`; box.style.left = `${l * 100}%`; box.style.width = box.style.height = `${s * 100}%`;
-      const w = 100 / vp.zoom;
-      win.style.width = win.style.height = `${w}%`;
+      win.style.width = win.style.height = `${100 / vp.zoom}%`;
       win.style.left = `${(vp.u - 0.5 / vp.zoom) * 100}%`; win.style.top = `${(vp.v - 0.5 / vp.zoom) * 100}%`;
       win.hidden = vp.zoom === 1;
     }
+    const press = (sel, val, key) => document.querySelectorAll(sel).forEach(b => b.setAttribute("aria-pressed", String(+b.dataset[key] === val)));
     let pending = 0;
     function setSection(sec) {
       const ticket = ++pending;
       const imgs = [$("vp-ov-img"), ...views.map(v => v.querySelector("img"))];
       const srcs = imgs.map(img => `assets/phase-retrieval/vol_${sec}_${img.dataset.vpKey || "overview"}.png`);
-      // load all four first, so the panel never mixes two regions
-      Promise.all(srcs.map(src => new Promise(done => { const im = new Image(); im.onload = im.onerror = done; im.src = src; }))).then(() => {
-        if (ticket !== pending) return;                  // a newer click won
+      $("vp").setAttribute("aria-busy", "true");
+      // load all four first and swap together, so the panel never mixes two regions
+      const load = src => new Promise((ok, fail) => { const im = new Image(); im.onload = ok; im.onerror = fail; im.src = src; });
+      Promise.all(srcs.map(load)).then(() => {
+        if (ticket !== pending) return;                       // a newer click won
         imgs.forEach((img, i) => { img.src = srcs[i]; });
         vp.sec = sec;
         $("vp-cap").textContent = "Noise in ×10⁻³ mm⁻¹; numbers are four-slice averages from Tests 3 and 6. " + CAP[sec];
         placeViews();
+      }).catch(() => {
+        if (ticket === pending) $("vp-cap").textContent = "Those images could not be loaded. The region shown has not changed.";
+      }).finally(() => {
+        if (ticket !== pending) return;
+        press("[data-vp-sec]", vp.sec, "vpSec");              // buttons always match the region on screen
+        $("vp").removeAttribute("aria-busy");
       });
     }
-    const press = (sel, btn) => document.querySelectorAll(sel).forEach(b => b.setAttribute("aria-pressed", String(b === btn)));
-    document.querySelectorAll("[data-vp-sec]").forEach(b => b.addEventListener("click", () => { press("[data-vp-sec]", b); setSection(+b.dataset.vpSec); }));
-    document.querySelectorAll("[data-vp-zoom]").forEach(b => b.addEventListener("click", () => { press("[data-vp-zoom]", b); vp.zoom = +b.dataset.vpZoom; placeViews(); }));
+    document.querySelectorAll("[data-vp-sec]").forEach(b => b.addEventListener("click", () => setSection(+b.dataset.vpSec)));
+    document.querySelectorAll("[data-vp-zoom]").forEach(b => b.addEventListener("click", () => {
+      vp.zoom = +b.dataset.vpZoom; press("[data-vp-zoom]", vp.zoom, "vpZoom"); placeViews();
+    }));
     for (const view of views) {
-      let drag = null;
+      let drag = null;                                         // { id, x, y } of the one pointer panning this view
       view.addEventListener("pointerdown", e => {
-        if (!e.isPrimary || e.button !== 0) return;
-        drag = { x: e.clientX, y: e.clientY }; view.setPointerCapture(e.pointerId);
+        if (drag || !e.isPrimary || e.button !== 0) return;
+        drag = { id: e.pointerId, x: e.clientX, y: e.clientY }; view.setPointerCapture(e.pointerId);
       });
       view.addEventListener("pointermove", e => {
-        if (!drag) return;
+        if (!drag || e.pointerId !== drag.id) return;
         const size = view.clientWidth * vp.zoom;
         vp.u -= (e.clientX - drag.x) / size; vp.v -= (e.clientY - drag.y) / size;
-        drag = { x: e.clientX, y: e.clientY }; placeViews();
+        drag.x = e.clientX; drag.y = e.clientY; placeViews();
       });
-      const end = () => { drag = null; };
+      const end = e => { if (drag && e.pointerId === drag.id) drag = null; };
       view.addEventListener("pointerup", end); view.addEventListener("pointercancel", end);
       view.addEventListener("keydown", e => {
         const step = 0.1 / vp.zoom, d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
@@ -1808,9 +1827,9 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
       });
     }
     placeViews();
-  })();
-
-  render();
+  } catch (err) {
+    console.error("Case-study figures could not start:", err);
+  }
 })();
 </script>
 
