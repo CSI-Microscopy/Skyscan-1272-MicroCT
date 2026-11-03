@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="description" content="Interactive simulation of Paganin phase retrieval for SkyScan 1272 micro-CT data.">
+<title>SkyScan 1272 Phase Retrieval</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: instrument-panel sidebar of scan controls beside a lab-notebook column of figures */
+:root {
+  --bg: #ECEFF2;
+  --surface: #FFFFFF;
+  --ink: #15212C;
+  --muted: #566877;
+  --line: #C8D1D9;
+  --raw: #B45607;
+  --pag: #0A716E;
+  --truth: #7C8996;
+  --plate: #0B0F13;
+  --note-bg: #E3EAF0;
+  --f-display: "IBM Plex Sans Condensed", "Arial Narrow", system-ui, sans-serif;
+  --f-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F151B; --surface: #16202A; --ink: #E2E9EF; --muted: #93A3B1; --line: #2A3845;
+    --raw: #F2964C; --pag: #3CC3BC; --truth: #8D9CAA; --plate: #05080B; --note-bg: #1B2733;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F151B; --surface: #16202A; --ink: #E2E9EF; --muted: #93A3B1; --line: #2A3845;
+  --raw: #F2964C; --pag: #3CC3BC; --truth: #8D9CAA; --plate: #05080B; --note-bg: #1B2733;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { color-scheme: light; }
+body { margin: 0; }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+body { background: var(--bg); color: var(--ink); font: 400 15px/1.6 var(--f-body); }
+.wrap {
+  max-width: 1220px; margin: 0 auto;
+  padding-block: 28px 72px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+h1, h2, h3 { font-family: var(--f-display); font-weight: 600; text-wrap: balance; margin: 0; letter-spacing: 0.005em; }
+h1 { font-size: clamp(1.8rem, 1.2rem + 2.2vw, 2.6rem); line-height: 1.1; }
+h2 { font-size: 1.45rem; line-height: 1.2; }
+h3 { font-size: 1.05rem; }
+p { margin: 0; max-width: 68ch; }
+.mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
+.back { color: var(--pag); text-decoration: none; }
+.back:hover { text-decoration: underline; }
+.eyebrow { font: 500 0.72rem/1 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+header { display: grid; gap: 10px; margin-bottom: 28px; }
+header p { color: var(--muted); }
+.tag { font: 500 0.72rem/1 var(--f-mono); padding: 3px 6px; border-radius: 3px; background: var(--note-bg); color: var(--muted); white-space: nowrap; }
+
+.layout { display: grid; grid-template-columns: 310px minmax(0, 1fr); gap: 32px; align-items: start; }
+@media (max-width: 880px) { .layout { grid-template-columns: minmax(0, 1fr); } .controls { position: static !important; max-height: none !important; } }
+
+.controls {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px);
+  max-height: calc(100vh - 24px); overflow: auto;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
+  padding: 18px; display: flex; flex-direction: column; gap: 18px;
+}
+.ctl { display: grid; gap: 4px; }
+.ctl-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ctl-top label { font-weight: 600; font-size: 0.9rem; }
+.ctl-top output { font-family: var(--f-mono); font-size: 0.85rem; }
+.field { font: 400 0.72rem/1.3 var(--f-mono); color: var(--muted); }
+input[type="range"] { width: 100%; accent-color: var(--pag); margin: 2px 0; }
+.group-title { font: 500 0.72rem/1 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding-top: 4px; border-top: 1px solid var(--line); padding-top: 14px; }
+.group-title:first-child { border-top: 0; padding-top: 0; }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+button {
+  font: 500 0.8rem/1 var(--f-body); color: var(--ink); background: transparent;
+  border: 1px solid var(--line); border-radius: 4px; padding: 7px 9px; cursor: pointer;
+}
+button:hover { border-color: var(--muted); }
+button:focus-visible, input:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid var(--pag); outline-offset: 2px; }
+.status { font-size: 0.82rem; line-height: 1.4; padding: 8px 10px; border-radius: 4px; border-left: 3px solid var(--muted); background: var(--note-bg); }
+.status[data-k="low"] { border-left-color: var(--raw); }
+.status[data-k="ok"] { border-left-color: var(--pag); }
+.status[data-k="high"] { border-left-color: var(--ink); }
+
+details.log summary { cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+details.log[open] summary { margin-bottom: 8px; }
+textarea {
+  width: 100%; min-height: 110px; resize: vertical; font: 400 0.75rem/1.4 var(--f-mono);
+  color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 4px; padding: 8px;
+}
+.log-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 8px; }
+.log-actions input[type="file"] { font-size: 0.75rem; max-width: 100%; color: var(--muted); }
+#log-msg { font-size: 0.78rem; color: var(--muted); margin-top: 6px; }
+
+main { display: grid; gap: 44px; min-width: 0; }
+section { display: grid; gap: 14px; min-width: 0; }
+.figure { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.caption { font-size: 0.85rem; color: var(--muted); max-width: 80ch; }
+
+.numbers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+@media (max-width: 560px) { .numbers { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.num { background: var(--surface); padding: 10px 12px; display: grid; gap: 2px; }
+.num .k { font-size: 0.78rem; color: var(--muted); }
+.num .v { font: 500 1.05rem/1.2 var(--f-mono); font-variant-numeric: tabular-nums; }
+.num .f { font: 400 0.68rem/1.2 var(--f-mono); color: var(--muted); }
+
+svg.plot, svg.geo { width: 100%; height: auto; display: block; }
+svg text { font-family: var(--f-mono); font-size: 11px; fill: var(--muted); }
+.ax { stroke: var(--line); stroke-width: 1; fill: none; }
+.grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 2 4; fill: none; }
+.s-raw { stroke: var(--raw); stroke-width: 1.6; fill: none; }
+.s-pag { stroke: var(--pag); stroke-width: 2; fill: none; }
+.s-truth { stroke: var(--truth); stroke-width: 1.4; stroke-dasharray: 5 4; fill: none; }
+.s-net { stroke: var(--ink); stroke-width: 1.4; fill: none; }
+.g-ink { stroke: var(--ink); fill: none; stroke-width: 1.2; }
+.g-beam { fill: var(--pag); opacity: 0.08; stroke: none; }
+.g-src { fill: var(--raw); }
+.g-cam { fill: var(--ink); }
+.g-sample { fill: var(--truth); opacity: 0.55; stroke: var(--ink); stroke-width: 1; }
+.g-dim { stroke: var(--muted); stroke-width: 1; fill: none; }
+.g-label { fill: var(--ink); font-size: 12px; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 0.8rem; color: var(--muted); }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.legend i { display: inline-block; width: 18px; height: 0; border-top: 2px solid; }
+.legend .l-raw { border-color: var(--raw); }
+.legend .l-pag { border-color: var(--pag); }
+.legend .l-truth { border-color: var(--truth); border-top-style: dashed; }
+.legend .l-net { border-color: var(--ink); }
+
+.slices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 520px) { .slices { grid-template-columns: minmax(0, 1fr); } }
+.slice { display: grid; gap: 6px; min-width: 0; }
+.slice canvas { width: 100%; max-width: 100%; aspect-ratio: 1; image-rendering: pixelated; display: block; background: var(--plate); border-radius: 3px; }
+.slice .t { font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 8px; }
+.slice .t i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.slice .d { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+.key { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 4px 16px; font-size: 0.78rem; color: var(--muted); }
+
+ol.steps { margin: 0; padding-left: 1.3em; display: grid; gap: 10px; max-width: 72ch; }
+ol.steps li::marker { font-family: var(--f-mono); color: var(--muted); }
+.math { display: grid; gap: 16px; }
+.eq { display: grid; gap: 6px; padding: 14px 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; min-width: 0; }
+.eq .formula { font: 500 0.95rem/1.5 var(--f-mono); overflow-x: auto; white-space: nowrap; padding-bottom: 2px; }
+.eq .where { font: 400 0.72rem/1.3 var(--f-mono); color: var(--muted); }
+.eq p { font-size: 0.9rem; }
+.note { background: var(--note-bg); border-radius: 6px; padding: 14px 16px; display: grid; gap: 8px; font-size: 0.88rem; }
+.note ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.warn { font-size: 0.82rem; color: var(--raw); }
+code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg); padding: 1px 4px; border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header>
+    <a class="eyebrow back" href="./">&larr; SkyScan 1272 guide</a>
+    <span class="eyebrow">Bruker SkyScan 1272 · NRecon · Paganin method</span>
+    <h1>Phase retrieval on your SkyScan 1272 scans</h1>
+    <p>Enter the geometry from your scan's <code>.log</code> file to see the phase fringes your camera records and what one setting, δ/β, does to them. The sample is simulated soft tissue, not your data.</p>
+  </header>
+
+  <div class="layout">
+    <aside class="controls" aria-label="Scan and reconstruction settings">
+      <div class="group-title">From your .log file</div>
+
+      <details class="log">
+        <summary>Paste or load a .log file</summary>
+        <textarea id="log-text" spellcheck="false" placeholder="[Acquisition]&#10;Source Voltage (kV)=50&#10;Object to Source (mm)=55.0&#10;Camera to Source (mm)=275.0&#10;Image Pixel Size (um)=3.0&#10;Filter=Al 0.25mm"></textarea>
+        <div class="log-actions">
+          <button type="button" id="log-apply">Read values</button>
+          <input type="file" id="log-file" accept=".log,.txt">
+        </div>
+        <div id="log-msg">The file stays in your browser.</div>
+      </details>
+
+      <div class="ctl">
+        <div class="ctl-top"><label for="os">Source to sample</label><output id="os-v" for="os"></output></div>
+        <input type="range" id="os" min="10" max="250" step="0.1" value="55">
+        <div class="field">Object to Source (mm)</div>
+      </div>
+      <div class="ctl">
+        <div class="ctl-top"><label for="cs">Source to camera</label><output id="cs-v" for="cs"></output></div>
+        <input type="range" id="cs" min="100" max="450" step="0.1" value="275">
+        <div class="field">Camera to Source (mm)</div>
+      </div>
+      <div class="ctl">
+        <div class="ctl-top"><label for="px">Pixel size</label><output id="px-v" for="px"></output></div>
+        <input type="range" id="px" min="0.5" max="20" step="0.05" value="3">
+        <div class="field">Image Pixel Size (um)</div>
+      </div>
+
+      <div class="group-title">NRecon setting</div>
+      <div class="ctl">
+        <div class="ctl-top"><label for="db">δ/β</label><output id="db-v" for="db"></output></div>
+        <input type="range" id="db" min="0" max="1000" step="1" value="560">
+        <div class="presets">
+          <button type="button" data-db="150">150</button>
+          <button type="button" data-db="tissue">Tissue value</button>
+          <button type="button" data-db="15000">15 000</button>
+        </div>
+        <div class="status" id="db-status" data-k="ok"></div>
+      </div>
+
+      <div class="group-title">Simulation</div>
+      <div class="ctl">
+        <div class="ctl-top"><label for="noise">Projection noise</label><output id="noise-v" for="noise"></output></div>
+        <input type="range" id="noise" min="0" max="3" step="0.05" value="0.3">
+        <div class="field">Real scans: lower with more projections and frame averaging</div>
+      </div>
+    </aside>
+
+    <main>
+      <section aria-labelledby="h-geo">
+        <h2 id="h-geo">Your geometry</h2>
+        <p>The SkyScan 1272 has a small X-ray spot and no gratings. X-rays bend slightly at boundaries inside the sample, and over the gap between the sample and the camera that bending turns into bright and dark lines along every edge. That gap is what the phase effect depends on.</p>
+        <div class="figure">
+          <svg class="geo" id="geo" viewBox="0 0 640 170" role="img" aria-label="Source, sample and camera positions"></svg>
+          <div class="numbers" id="numbers"></div>
+          <div class="warn" id="nf-warn" hidden></div>
+        </div>
+      </section>
+
+      <section aria-labelledby="h-proj">
+        <h2 id="h-proj">What the camera records</h2>
+        <p>One line of one projection image across the simulated sample. Tissue absorbs only a few percent at these energies, so the absorption signal is faint. The edge fringes are often larger than the absorption itself.</p>
+        <div class="figure">
+          <div class="legend">
+            <span><i class="l-truth"></i>Absorption only (no phase, no noise)</span>
+            <span><i class="l-raw"></i>What the camera records</span>
+            <span><i class="l-pag"></i>After Paganin filter</span>
+          </div>
+          <svg class="plot" id="proj-plot" viewBox="0 0 640 240" role="img" aria-label="Projection intensity profile"></svg>
+          <p class="caption">Vertical axis: transmitted intensity relative to the flat field (1 = no sample). Horizontal axis: position across the camera, in the sample's own scale.</p>
+        </div>
+      </section>
+
+      <section aria-labelledby="h-slice">
+        <h2 id="h-slice">Reconstructed slice</h2>
+        <p>The same simulated scan reconstructed two ways from identical noisy projections. The only difference is the phase-retrieval filter applied to each projection before reconstruction.</p>
+        <div class="figure">
+          <div class="slices">
+            <div class="slice">
+              <div class="t"><i style="background: var(--truth)"></i>True sample</div>
+              <canvas id="c-truth" width="192" height="192" aria-label="True sample attenuation map"></canvas>
+              <div class="d">Attenuation map of the simulated sample.</div>
+            </div>
+            <div class="slice">
+              <div class="t"><i style="background: var(--raw)"></i>Standard NRecon</div>
+              <canvas id="c-std" width="192" height="192" aria-label="Standard reconstruction"></canvas>
+              <div class="d">No phase retrieval: edge halos and noise.</div>
+            </div>
+            <div class="slice">
+              <div class="t"><i style="background: var(--pag)"></i>With phase retrieval</div>
+              <canvas id="c-pag" width="192" height="192" aria-label="Phase-retrieved reconstruction"></canvas>
+              <div class="d" id="pag-desc">Paganin filter at the δ/β you set.</div>
+            </div>
+          </div>
+          <div class="key">
+            <span>Large dark disk: air channel</span>
+            <span>Grey lobes: fat</span>
+            <span>Small bright dots: denser tissue</span>
+            <span>White disk (bottom): mineral grain</span>
+          </div>
+          <div class="legend">
+            <span><i class="l-truth"></i>True</span>
+            <span><i class="l-raw"></i>Standard</span>
+            <span><i class="l-pag"></i>Phase retrieval</span>
+          </div>
+          <svg class="plot" id="slice-plot" viewBox="0 0 640 240" role="img" aria-label="Line profile through the slices"></svg>
+          <p class="caption">Profile along the dashed line in the slices. Vertical axis: linear attenuation coefficient in 1/mm. All three slices use the same grey scale, −0.03 to 0.14 /mm.</p>
+        </div>
+      </section>
+
+      <section aria-labelledby="h-filter">
+        <h2 id="h-filter">Why one number fixes it</h2>
+        <p>Phase effects boost fine detail: the smaller the feature, the stronger the boost (amber). The Paganin filter reduces fine detail by the opposite amount (teal). When δ/β matches the material, the two cancel and the result is flat (black). Set it too low and halos survive; set it too high and real detail is smoothed away.</p>
+        <div class="figure">
+          <div class="legend">
+            <span><i class="l-raw"></i>Phase boost for tissue</span>
+            <span><i class="l-pag"></i>Paganin filter at your δ/β</span>
+            <span><i class="l-net"></i>Net result</span>
+          </div>
+          <svg class="plot" id="filter-plot" viewBox="0 0 640 240" role="img" aria-label="Filter response versus detail size"></svg>
+          <p class="caption">Horizontal axis: detail fineness in line pairs per mm, from coarse (left) to the finest your pixel size can show (right). Vertical axis: gain, where 1 means unchanged. Detector blur is not included in this plot.</p>
+        </div>
+      </section>
+
+      <section aria-labelledby="h-steps">
+        <h2 id="h-steps">Doing it on your data</h2>
+        <ol class="steps">
+          <li>Check that the scan folder still has the raw projection images and the matching <code>.log</code>. Phase retrieval works on projections, so reconstructed slices alone are not enough.</li>
+          <li>Open the dataset in NRecon 2.0 or newer. Bruker's distributor describes phase retrieval as new in 2.0. Check the version on your reconstruction PC.</li>
+          <li>Turn on phase retrieval and enter δ/β. The distances and pixel size come from the <code>.log</code> automatically. <span class="tag">Unverified</span> I could not confirm the menu name; Bruker method note MN133 has the walk-through.</li>
+          <li>Preview one slice. If bright or dark halos remain at edges, raise δ/β. If fine structures blur, lower it. Changing it in steps of 2–3× is a practical way to find the range.</li>
+          <li><span class="tag">Inference</span> Phase retrieval already smooths, so reduce NRecon's separate Smoothing setting to avoid smoothing twice.</li>
+          <li>Reconstruct the full stack and write the δ/β value in your methods section.</li>
+        </ol>
+        <div class="note">
+          <strong>For future scans</strong>
+          <span><span class="tag">Inference</span> On this scanner, a smaller pixel size (higher magnification) makes phase fringes stronger relative to pixel size, so phase retrieval gains the most on high-resolution scans of low-density samples.</span>
+        </div>
+      </section>
+
+      <section aria-labelledby="h-math">
+        <h2 id="h-math">The math, in plain words</h2>
+        <div class="math">
+          <div class="eq">
+            <div class="formula">M = CS / OS</div>
+            <div class="where">In the code: geometry()</div>
+            <p><b>Magnification.</b> CS is the source-to-camera distance and OS the source-to-sample distance. If the camera is 5 times farther from the source than the sample is, the shadow of the sample is 5 times larger on the camera.</p>
+          </div>
+          <div class="eq">
+            <div class="formula">z_eff = OS × (CS − OS) / CS</div>
+            <div class="where">In the code: geometry()</div>
+            <p><b>Effective propagation distance.</b> (CS − OS) is the gap between sample and camera, where fringes grow. Because the beam is a cone, the image is also magnified on the way, so the gap is scaled down to what it would be at the sample's own size. Longer z_eff means stronger fringes.</p>
+          </div>
+          <div class="eq">
+            <div class="formula">I_camera = I_absorption + z_eff × (how sharply the sample's "phase thickness" curves)</div>
+            <div class="where">In the code: the "camera" loop inside render(); physics name: transport-of-intensity equation</div>
+            <p><b>Where fringes come from.</b> δ measures how much a material bends X-rays. Adding up δ along each ray gives a "phase thickness". Where that thickness changes direction sharply (at an edge), X-rays pile up on one side (bright line) and leave the other (dark line). The code measures this curvature by comparing each camera pixel with its two neighbours.</p>
+          </div>
+          <div class="eq">
+            <div class="formula">β = μ × λ / (4π) &nbsp;&nbsp;&nbsp; so &nbsp;&nbsp; δ/β = δ × 4π / (μ × λ)</div>
+            <div class="where">In the code: TISSUE_DB constant</div>
+            <p><b>The δ/β ratio.</b> β is the absorption of the material written in the same units as δ. μ is the usual attenuation coefficient and λ is the X-ray wavelength (0.062 nm at the 20 keV used here). δ/β is "how much it bends" divided by "how much it absorbs". For soft tissue it is in the thousands, so tissue bends X-rays far more than it absorbs them.</p>
+          </div>
+          <div class="eq">
+            <div class="formula">filtered = original ÷ (1 + c × (2π / period)²), &nbsp; c = z_eff × (δ/β) × λ / (4π)</div>
+            <div class="where">In the code: the HP filter array in render(), applied with applyFilter()</div>
+            <p><b>The Paganin filter.</b> Each projection is split into patterns of different sizes ("periods"). Large patterns are divided by almost exactly 1 and stay the same. Small patterns are divided by a large number and shrink. Edge fringes are the smallest patterns, so they are removed. Random pixel noise is also fine-scale, so it drops too.</p>
+          </div>
+          <div class="eq">
+            <div class="formula">L = √c</div>
+            <div class="where">In the code: geometry(), shown as "Smoothing length"</div>
+            <p><b>Smoothing length.</b> The size, in µm, below which the filter starts removing detail. Compare it with your pixel size: an L of several pixels means a strong filter.</p>
+          </div>
+          <div class="eq">
+            <div class="formula">N_F = p² / (λ × z_eff)</div>
+            <div class="where">In the code: geometry(), shown as "Fresnel number"</div>
+            <p><b>Fresnel number.</b> p is the pixel size. Values above about 1 mean the fringes are thin compared with a pixel. That is the regime the Paganin method and this simulation assume.</p>
+          </div>
+          <div class="eq">
+            <div class="formula">projection = −ln(I) &nbsp;→&nbsp; sharpen (ramp filter) &nbsp;→&nbsp; smear back across the image at every angle</div>
+            <div class="where">In the code: rampH, applyFilter(), backproject()</div>
+            <p><b>Reconstruction.</b> Taking −ln turns transmitted intensity into "total attenuation along the ray". Each projection is then sharpened and spread back over the image along its viewing angle. Adding all 180 angles rebuilds the slice. NRecon does the same in principle, with a cone-beam version of the algorithm.</p>
+          </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="h-verify">
+        <h2 id="h-verify">What is verified and what is not</h2>
+        <div class="note">
+          <strong>From Bruker's distributor (Blue Scientific), via search results</strong>
+          <ul>
+            <li>NRecon 2.0 includes Paganin single-distance phase retrieval.</li>
+            <li>It works on existing scans if the projection images are still available.</li>
+            <li>Many parameters are read from the scan <code>.log</code>; the key user setting is δ/β.</li>
+            <li>Step-by-step guide: Bruker method note MN133. It is not in this repository's manuals folder.</li>
+          </ul>
+        </div>
+        <div class="note">
+          <strong>Not verified</strong>
+          <ul>
+            <li>The exact NRecon menu names, and whether NRecon's δ/β field equals the physical ratio or is a scaled version.</li>
+            <li>The <code>.log</code> field names on your system. The parser looks for the names shown under each slider.</li>
+            <li>The default distances (55 mm and 275 mm) are example values, not 1272 specifications.</li>
+            <li>Material values are approximate textbook values at a single energy of 20 keV. Your scanner produces a spread of energies, so the best δ/β on real data is found by eye.</li>
+            <li>The simulation is simplified: parallel beam instead of cone beam, one energy, one detector-blur value, 180 projections.</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- constants ----------
+  const N = 192;          // detector pixels per row = slice width in pixels
+  const NA = 180;         // number of projection angles over 180°
+  const M = 512;          // FFT length (padded)
+  const OFF = (M - N) >> 1;
+  const SUB = 4;          // sub-samples per detector pixel
+  const E_KEV = 20;
+  const LAMBDA = 1.23984e-6 / (E_KEV * 1000);   // wavelength in metres: λ = hc / E
+  const BLUR_SIGMA = 0.7; // detector blur, in pixels
+  const WIN_LO = -0.03, WIN_HI = 0.14;           // display window, 1/mm
+
+  // Approximate material values at 20 keV. mu in 1/m, d = δ (dimensionless).
+  const MAT = {
+    air:     { mu: 0,   d: 0 },
+    tissue:  { mu: 80,  d: 5.8e-7 },
+    fat:     { mu: 50,  d: 5.2e-7 },
+    dense:   { mu: 100, d: 6.6e-7 },
+    mineral: { mu: 530, d: 1.1e-6 },
+  };
+  const T = MAT.tissue;
+  const dif = (a, b) => ({ mu: a.mu - b.mu, d: a.d - b.d });
+  // δ/β of tissue, with β = μ λ / (4π)
+  const TISSUE_DB = T.d / (T.mu * LAMBDA / (4 * Math.PI));
+
+  // Phantom: circles in units of the half field of view. Values are added on top of what contains them.
+  const PHANTOM = [
+    { x: 0,     y: 0,     r: 0.86,  ...T },
+    { x: -0.32, y: 0.22,  r: 0.13,  ...dif(MAT.air, T) },
+    { x: 0.36,  y: -0.34, r: 0.045, ...dif(MAT.air, T) },
+    { x: 0.47,  y: -0.18, r: 0.028, ...dif(MAT.air, T) },
+    { x: 0.30,  y: 0.36,  r: 0.19,  ...dif(MAT.fat, T) },
+    { x: -0.55, y: -0.08, r: 0.06,  ...dif(MAT.fat, T) },
+    { x: -0.18, y: -0.50, r: 0.07,  ...dif(MAT.mineral, T) },
+    { x: 0.02,  y: 0.02,  r: 0.035, ...dif(MAT.dense, T) },
+    { x: 0.14,  y: -0.08, r: 0.025, ...dif(MAT.dense, T) },
+    { x: -0.06, y: -0.17, r: 0.02,  ...dif(MAT.dense, T) },
+    { x: 0.05,  y: 0.55,  r: 0.03,  ...dif(MAT.dense, T) },
+  ];
+  const PROFILE_Y = 0.28; // profile row, in half-FOV units
+
+  // ---------- FFT (radix-2, in place) ----------
+  function fft(re, im, inverse) {
+    const n = re.length;
+    for (let i = 1, j = 0; i < n; i++) {
+      let bit = n >> 1;
+      for (; j & bit; bit >>= 1) j ^= bit;
+      j ^= bit;
+      if (i < j) {
+        let t = re[i]; re[i] = re[j]; re[j] = t;
+        t = im[i]; im[i] = im[j]; im[j] = t;
+      }
+    }
+    for (let len = 2; len <= n; len <<= 1) {
+      const ang = (2 * Math.PI / len) * (inverse ? 1 : -1);
+      const wr = Math.cos(ang), wi = Math.sin(ang);
+      const half = len >> 1;
+      for (let i = 0; i < n; i += len) {
+        let cr = 1, ci = 0;
+        for (let k = 0; k < half; k++) {
+          const a = i + k, b = a + half;
+          const br = re[b] * cr - im[b] * ci;
+          const bi = re[b] * ci + im[b] * cr;
+          re[b] = re[a] - br; im[b] = im[a] - bi;
+          re[a] += br; im[a] += bi;
+          const t = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = t;
+        }
+      }
+    }
+    if (inverse) for (let i = 0; i < n; i++) { re[i] /= n; im[i] /= n; }
+  }
+
+  const fre = new Float64Array(M), fim = new Float64Array(M);
+  // Multiply a row by a frequency response H. "pad" is the value assumed outside the row.
+  function applyFilter(sig, H, pad, out) {
+    fre.fill(pad); fim.fill(0);
+    for (let i = 0; i < N; i++) fre[OFF + i] = sig[i];
+    fft(fre, fim, false);
+    for (let k = 0; k < M; k++) { fre[k] *= H[k]; fim[k] *= H[k]; }
+    fft(fre, fim, true);
+    for (let i = 0; i < N; i++) out[i] = fre[OFF + i];
+  }
+
+  // Squared angular frequency per FFT bin, in 1/pixel²
+  const K2PIX = new Float64Array(M);
+  for (let k = 0; k < M; k++) {
+    const kk = k <= M / 2 ? k : k - M;
+    const w = 2 * Math.PI * kk / M;
+    K2PIX[k] = w * w;
+  }
+
+  // Ram-Lak ramp filter (from its exact discrete kernel), with a Hamming window. Units: 1/pixel.
+  const rampH = (() => {
+    const r = new Float64Array(M), i = new Float64Array(M);
+    r[0] = 0.25;
+    for (let n = 1; n < M / 2; n++) {
+      if (n % 2) { const v = -1 / (Math.PI * Math.PI * n * n); r[n] = v; r[M - n] = v; }
+    }
+    fft(r, i, false);
+    const H = new Float64Array(M);
+    for (let k = 0; k < M; k++) {
+      const kk = Math.min(k, M - k);
+      H[k] = r[k] * (0.54 + 0.46 * Math.cos(Math.PI * kk / (M / 2)));
+    }
+    return H;
+  })();
+
+  // Gaussian detector blur kernel
+  const BK = (() => {
+    const rad = 3, k = [];
+    let s = 0;
+    for (let i = -rad; i <= rad; i++) { const v = Math.exp(-(i * i) / (2 * BLUR_SIGMA * BLUR_SIGMA)); k.push(v); s += v; }
+    return k.map(v => v / s);
+  })();
+
+  // ---------- phantom projections (in pixel units, independent of pixel size) ----------
+  const COS = new Float64Array(NA), SIN = new Float64Array(NA);
+  for (let a = 0; a < NA; a++) { COS[a] = Math.cos(Math.PI * a / NA); SIN[a] = Math.sin(Math.PI * a / NA); }
+  const HALF = N / 2;
+  const baseMu = [], baseD = [];
+  for (let a = 0; a < NA; a++) {
+    const pm = new Float64Array(N), pd = new Float64Array(N);
+    for (const o of PHANTOM) {
+      const cen = o.x * HALF * COS[a] + o.y * HALF * SIN[a];
+      const r = o.r * HALF;
+      for (let i = 0; i < N; i++) {
+        const si = i - (N - 1) / 2;
+        if (Math.abs(si - cen) > r + 1) continue;
+        let acc = 0;
+        for (let j = 0; j < SUB; j++) {
+          const d = si - 0.5 + (j + 0.5) / SUB - cen;
+          const q = r * r - d * d;
+          if (q > 0) acc += 2 * Math.sqrt(q);   // chord length through a circle
+        }
+        const len = acc / SUB;                    // pixels
+        pm[i] += o.mu * len; pd[i] += o.d * len;
+      }
+    }
+    baseMu.push(pm); baseD.push(pd);
+  }
+
+  // True attenuation map (1/mm) for display
+  const truth = new Float64Array(N * N);
+  for (let iy = 0; iy < N; iy++) for (let ix = 0; ix < N; ix++) {
+    let v = 0;
+    for (let sy = 0; sy < 2; sy++) for (let sx = 0; sx < 2; sx++) {
+      const X = (ix - (N - 1) / 2 + (sx - 0.5) * 0.5) / HALF;
+      const Y = ((N - 1) / 2 - iy + (sy - 0.5) * 0.5) / HALF;
+      for (const o of PHANTOM) if ((X - o.x) ** 2 + (Y - o.y) ** 2 < o.r * o.r) v += o.mu;
+    }
+    truth[iy * N + ix] = v / 4 / 1000;
+  }
+  const PROFILE_ROW = Math.round((N - 1) / 2 - PROFILE_Y * HALF);
+
+  // ---------- random numbers (seeded, so noise is identical between redraws) ----------
+  function rng(seed) {
+    return () => {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // ---------- state & controls ----------
+  const $ = id => document.getElementById(id);
+  const DB_MIN = 10, DB_MAX = 20000;
+  const dbFromSlider = v => DB_MIN * Math.pow(DB_MAX / DB_MIN, v / 1000);
+  const sliderFromDb = db => Math.round(1000 * Math.log(db / DB_MIN) / Math.log(DB_MAX / DB_MIN));
+  $("db").value = sliderFromDb(TISSUE_DB);
+
+  function readState() {
+    return {
+      os: +$("os").value, cs: +$("cs").value, px: +$("px").value,
+      db: dbFromSlider(+$("db").value), noise: +$("noise").value,
+    };
+  }
+
+  // M = CS/OS ; z_eff = OS(CS−OS)/CS ; c = z_eff (δ/β) λ/4π ; L = √c ; N_F = p²/(λ z_eff)
+  function geometry(s) {
+    const os = s.os / 1000, cs = Math.max(s.cs, s.os + 1) / 1000;
+    const R2 = cs - os;
+    const zEff = os * R2 / cs;
+    const mag = cs / os;
+    const p = s.px * 1e-6;
+    const c = zEff * s.db * LAMBDA / (4 * Math.PI);
+    return { os, cs, R2, zEff, mag, p, c, L: Math.sqrt(c), NF: p * p / (LAMBDA * zEff) };
+  }
+
+  const fmt = (v, d) => v.toLocaleString("en-US", { maximumFractionDigits: d, minimumFractionDigits: d });
+
+  // ---------- drawing helpers ----------
+  const NS = "http://www.w3.org/2000/svg";
+  function niceTicks(lo, hi, n) {
+    const span = hi - lo; if (!(span > 0)) return [lo];
+    const step0 = span / n, mag = Math.pow(10, Math.floor(Math.log10(step0)));
+    const step = [1, 2, 2.5, 5, 10].map(m => m * mag).find(s => span / s <= n) || 10 * mag;
+    const out = [];
+    for (let v = Math.ceil(lo / step) * step; v <= hi + step * 1e-9; v += step) out.push(+v.toPrecision(10));
+    return out;
+  }
+  function tickLabel(v) {
+    const a = Math.abs(v);
+    if (a === 0) return "0";
+    if (a >= 100) return v.toFixed(0);
+    if (a >= 1) return +v.toFixed(2) + "";
+    return +v.toPrecision(2) + "";
+  }
+  function plot(svg, { xmin, xmax, ymin, ymax, series, xlabel, refY, vmark }) {
+    const W = 640, H = 240, l = 56, r = 14, t = 12, b = 40;
+    const X = x => l + (x - xmin) / (xmax - xmin) * (W - l - r);
+    const Y = y => t + (1 - (y - ymin) / (ymax - ymin)) * (H - t - b);
+    const id = svg.id + "-clip";
+    let h = `<defs><clipPath id="${id}"><rect x="${l}" y="${t}" width="${W - l - r}" height="${H - t - b}"/></clipPath></defs>`;
+    for (const v of niceTicks(ymin, ymax, 5)) {
+      h += `<line class="grid" x1="${l}" x2="${W - r}" y1="${Y(v)}" y2="${Y(v)}"/>`;
+      h += `<text x="${l - 6}" y="${Y(v) + 4}" text-anchor="end">${tickLabel(v)}</text>`;
+    }
+    for (const v of niceTicks(xmin, xmax, 6)) {
+      h += `<line class="ax" x1="${X(v)}" x2="${X(v)}" y1="${H - b}" y2="${H - b + 4}"/>`;
+      h += `<text x="${X(v)}" y="${H - b + 16}" text-anchor="middle">${tickLabel(v)}</text>`;
+    }
+    if (refY !== undefined) h += `<line class="ax" x1="${l}" x2="${W - r}" y1="${Y(refY)}" y2="${Y(refY)}" style="stroke: var(--muted)"/>`;
+    if (vmark && vmark.x > xmin && vmark.x < xmax) {
+      h += `<line class="grid" x1="${X(vmark.x)}" x2="${X(vmark.x)}" y1="${t}" y2="${H - b}" style="stroke: var(--pag); stroke-dasharray: 3 3"/>`;
+      const anchor = X(vmark.x) > W * 0.7 ? "end" : "start";
+      const dx = anchor === "end" ? -6 : 6;
+      h += `<text x="${X(vmark.x) + dx}" y="${t + 12}" text-anchor="${anchor}" style="fill: var(--pag)">${vmark.label}</text>`;
+    }
+    h += `<line class="ax" x1="${l}" x2="${W - r}" y1="${H - b}" y2="${H - b}"/>`;
+    h += `<line class="ax" x1="${l}" x2="${l}" y1="${t}" y2="${H - b}"/>`;
+    h += `<g clip-path="url(#${id})">`;
+    for (const s of series) {
+      let d = "";
+      for (let i = 0; i < s.x.length; i++) {
+        const yv = Math.max(ymin - (ymax - ymin), Math.min(ymax + (ymax - ymin), s.y[i]));
+        d += (i ? "L" : "M") + X(s.x[i]).toFixed(1) + " " + Y(yv).toFixed(1);
+      }
+      h += `<path class="${s.cls}" d="${d}"/>`;
+    }
+    h += `</g><text x="${(l + W - r) / 2}" y="${H - 6}" text-anchor="middle">${xlabel}</text>`;
+    svg.innerHTML = h;
+  }
+
+  function drawSlice(canvas, img, showRow) {
+    const ctx = canvas.getContext("2d");
+    const data = ctx.createImageData(N, N);
+    const cs = getComputedStyle(document.documentElement);
+    for (let i = 0; i < N * N; i++) {
+      const v = img[i];
+      let g;
+      if (Number.isNaN(v)) { data.data[i * 4 + 3] = 0; continue; }
+      g = Math.round(255 * Math.min(1, Math.max(0, (v - WIN_LO) / (WIN_HI - WIN_LO))));
+      data.data[i * 4] = g; data.data[i * 4 + 1] = g; data.data[i * 4 + 2] = g; data.data[i * 4 + 3] = 255;
+    }
+    ctx.putImageData(data, 0, 0);
+    if (showRow) {
+      ctx.save();
+      ctx.strokeStyle = cs.getPropertyValue("--raw").trim() || "orange";
+      ctx.globalAlpha = 0.9; ctx.lineWidth = 1; ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(0, PROFILE_ROW + 0.5); ctx.lineTo(N, PROFILE_ROW + 0.5); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  function drawGeometry(s, g) {
+    const svg = $("geo");
+    const x0 = 40, x1 = 600, scale = (x1 - x0) / s.cs;
+    const xs = x0 + s.os * scale, axisY = 62;
+    const camH = 84;
+    const rs = Math.max(5, Math.min(16, 9 * (1 + 30 / s.os)));
+    let h = "";
+    h += `<polygon class="g-beam" points="${x0},${axisY} ${x1},${axisY - camH / 2} ${x1},${axisY + camH / 2}"/>`;
+    h += `<line class="g-dim" x1="${x0}" x2="${x1}" y1="${axisY}" y2="${axisY}" style="stroke-dasharray: 2 4"/>`;
+    h += `<circle class="g-src" cx="${x0}" cy="${axisY}" r="6"/>`;
+    h += `<circle class="g-sample" cx="${xs}" cy="${axisY}" r="${rs}"/>`;
+    h += `<rect class="g-cam" x="${x1}" y="${axisY - camH / 2}" width="8" height="${camH}" rx="1"/>`;
+    h += `<text class="g-label" x="${x0}" y="${axisY - 14}" text-anchor="middle">source</text>`;
+    h += `<text class="g-label" x="${xs}" y="${axisY - rs - 8}" text-anchor="middle">sample</text>`;
+    h += `<text class="g-label" x="${x1 - 6}" y="${axisY - camH / 2 - 6}" text-anchor="end">camera</text>`;
+    const d1 = 124, d2 = 152;
+    const dim = (xa, xb, y, label) => {
+      let o = `<line class="g-dim" x1="${xa}" x2="${xb}" y1="${y}" y2="${y}"/>`;
+      o += `<line class="g-dim" x1="${xa}" x2="${xa}" y1="${y - 5}" y2="${y + 5}"/><line class="g-dim" x1="${xb}" x2="${xb}" y1="${y - 5}" y2="${y + 5}"/>`;
+      const mid = (xa + xb) / 2;
+      o += `<text x="${mid}" y="${y - 5}" text-anchor="middle">${label}</text>`;
+      return o;
+    };
+    h += dim(x0, xs, d1, `OS ${fmt(s.os, 1)} mm`);
+    h += dim(xs, x1, d1, `gap ${fmt(s.cs - s.os, 1)} mm`);
+    h += dim(x0, x1, d2, `CS ${fmt(s.cs, 1)} mm`);
+    svg.innerHTML = h;
+  }
+
+  function drawNumbers(s, g) {
+    const items = [
+      ["Magnification", fmt(g.mag, 2) + "×", "M = CS / OS"],
+      ["Effective distance", fmt(g.zEff * 1000, 1) + " mm", "z_eff = OS·(CS−OS)/CS"],
+      ["Fresnel number", fmt(g.NF, 2), "N_F = p² / (λ·z_eff)"],
+      ["Smoothing length", fmt(g.L * 1e6, 1) + " µm", "L = √(z_eff·δ/β·λ/4π)"],
+      ["Smoothing in pixels", fmt(g.L / g.p, 1) + " px", "L / pixel size"],
+      ["Tissue δ/β (model)", fmt(TISSUE_DB, 0), "at 20 keV, approximate"],
+    ];
+    $("numbers").innerHTML = items.map(([k, v, f]) =>
+      `<div class="num"><span class="k">${k}</span><span class="v">${v}</span><span class="f">${f}</span></div>`).join("");
+    const w = $("nf-warn");
+    if (g.NF < 1) {
+      w.hidden = false;
+      w.textContent = "Fresnel number below 1: fringes are wide compared with a pixel. The simple model used in this simulation is less accurate here.";
+    } else w.hidden = true;
+  }
+
+  function drawStatus(s) {
+    const r = s.db / TISSUE_DB, el = $("db-status");
+    if (r < 0.6) { el.dataset.k = "low"; el.textContent = "Below the tissue value: edge halos remain."; }
+    else if (r <= 1.7) { el.dataset.k = "ok"; el.textContent = "Near the tissue value: halos removed, edges kept."; }
+    else { el.dataset.k = "high"; el.textContent = "Above the tissue value: fine detail is being smoothed away."; }
+  }
+
+  // ---------- main simulation ----------
+  const Pmu = new Float64Array(N), Pd = new Float64Array(N), I0 = new Float64Array(N);
+  const Iz = new Float64Array(N), Ib = new Float64Array(N), Ipag = new Float64Array(N);
+  const lnStd = new Float64Array(N), lnPag = new Float64Array(N);
+  const HP = new Float64Array(M);
+  const sinoStd = [], sinoPag = [];
+  for (let a = 0; a < NA; a++) { sinoStd.push(new Float64Array(N)); sinoPag.push(new Float64Array(N)); }
+
+  function backproject(sino) {
+    const img = new Float64Array(N * N);
+    const c0 = (N - 1) / 2;
+    for (let a = 0; a < NA; a++) {
+      const q = sino[a], c = COS[a], s = SIN[a];
+      for (let iy = 0; iy < N; iy++) {
+        const Y = c0 - iy, base = Y * s + c0;
+        const row = iy * N;
+        for (let ix = 0; ix < N; ix++) {
+          const t = (ix - c0) * c + base;
+          if (t < 0 || t >= N - 1) continue;
+          const i0 = t | 0, f = t - i0;
+          img[row + ix] += q[i0] * (1 - f) + q[i0 + 1] * f;
+        }
+      }
+    }
+    const k = Math.PI / NA;
+    for (let iy = 0; iy < N; iy++) for (let ix = 0; ix < N; ix++) {
+      const i = iy * N + ix;
+      const rx = ix - c0, ry = iy - c0;
+      img[i] = (rx * rx + ry * ry > c0 * c0) ? NaN : img[i] * k;
+    }
+    return img;
+  }
+
+  function render() {
+    const s = readState();
+    const g = geometry(s);
+    const p = g.p, p2 = p * p;
+
+    $("os-v").textContent = fmt(s.os, 1) + " mm";
+    $("cs-v").textContent = fmt(s.cs, 1) + " mm";
+    $("px-v").textContent = fmt(s.px, 2) + " µm";
+    $("db-v").textContent = fmt(s.db, 0);
+    $("noise-v").textContent = fmt(s.noise, 2) + " %";
+    $("pag-desc").textContent = `Paganin filter at δ/β = ${fmt(s.db, 0)}.`;
+    drawGeometry(s, g); drawNumbers(s, g); drawStatus(s);
+
+    // Paganin filter: 1 / (1 + c·K²), with K² converted from 1/pixel² to 1/m²
+    for (let k = 0; k < M; k++) HP[k] = 1 / (1 + g.c * K2PIX[k] / p2);
+
+    const rand = rng(12345);
+    const gauss = () => { const u = Math.max(rand(), 1e-12), v = rand(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
+    const sigma = s.noise / 100;
+    let prof = null;
+
+    for (let a = 0; a < NA; a++) {
+      const bm = baseMu[a], bd = baseD[a];
+      for (let i = 0; i < N; i++) { Pmu[i] = bm[i] * p; Pd[i] = bd[i] * p; I0[i] = Math.exp(-Pmu[i]); }
+      // Camera: I_z = I_0 + z_eff · d/dx( I_0 · d(Pδ)/dx )   (transport-of-intensity, 1-D)
+      for (let i = 0; i < N; i++) {
+        const dR = (i < N - 1 ? Pd[i + 1] : 0) - Pd[i];
+        const dL = Pd[i] - (i > 0 ? Pd[i - 1] : 0);
+        const IR = 0.5 * (I0[i] + (i < N - 1 ? I0[i + 1] : 1));
+        const IL = 0.5 * (I0[i] + (i > 0 ? I0[i - 1] : 1));
+        Iz[i] = I0[i] + g.zEff * (IR * dR - IL * dL) / p2;
+      }
+      // Detector blur, then photon noise (proportional to √intensity)
+      for (let i = 0; i < N; i++) {
+        let v = 0;
+        for (let j = -3; j <= 3; j++) { const ii = i + j; v += BK[j + 3] * (ii >= 0 && ii < N ? Iz[ii] : 1); }
+        v += sigma * Math.sqrt(Math.max(v, 0)) * gauss();
+        Ib[i] = Math.max(v, 1e-3);
+      }
+      // Paganin filter on the intensity (outside the row is flat field = 1)
+      applyFilter(Ib, HP, 1, Ipag);
+      for (let i = 0; i < N; i++) {
+        lnStd[i] = -Math.log(Ib[i]);
+        lnPag[i] = -Math.log(Math.max(Ipag[i], 1e-3));
+      }
+      if (a === 0) prof = { I0: Float64Array.from(I0), Ib: Float64Array.from(Ib), Ip: Float64Array.from(Ipag) };
+      // Ramp filter for reconstruction; divide by p to get 1/m
+      applyFilter(lnStd, rampH, 0, sinoStd[a]);
+      applyFilter(lnPag, rampH, 0, sinoPag[a]);
+      for (let i = 0; i < N; i++) { sinoStd[a][i] /= p; sinoPag[a][i] /= p; }
+    }
+
+    const recStd = backproject(sinoStd), recPag = backproject(sinoPag);
+    for (let i = 0; i < N * N; i++) { recStd[i] /= 1000; recPag[i] /= 1000; } // 1/m → 1/mm
+    const truthMasked = truth.map((v, i) => {
+      const c0 = (N - 1) / 2, ix = i % N - c0, iy = Math.floor(i / N) - c0;
+      return ix * ix + iy * iy > c0 * c0 ? NaN : v;
+    });
+    drawSlice($("c-truth"), truthMasked, true);
+    drawSlice($("c-std"), recStd, true);
+    drawSlice($("c-pag"), recPag, true);
+
+    // Projection profile
+    const xs = Array.from({ length: N }, (_, i) => (i - (N - 1) / 2) * s.px);
+    let lo = Infinity, hi = -Infinity;
+    for (const arr of [prof.I0, prof.Ib, prof.Ip]) for (const v of arr) { lo = Math.min(lo, v); hi = Math.max(hi, v); }
+    const padY = (hi - lo) * 0.08 || 0.01;
+    plot($("proj-plot"), {
+      xmin: xs[0], xmax: xs[N - 1], ymin: lo - padY, ymax: hi + padY, refY: 1,
+      xlabel: "position (µm)",
+      series: [
+        { x: xs, y: prof.Ib, cls: "s-raw" },
+        { x: xs, y: prof.I0, cls: "s-truth" },
+        { x: xs, y: prof.Ip, cls: "s-pag" },
+      ],
+    });
+
+    // Slice line profile
+    const row = PROFILE_ROW * N;
+    const sl = (img) => Array.from({ length: N }, (_, i) => img[row + i]);
+    const keep = (arr) => arr.map(v => Number.isNaN(v) ? 0 : v);
+    plot($("slice-plot"), {
+      xmin: xs[0], xmax: xs[N - 1], ymin: -0.06, ymax: 0.17, refY: 0,
+      xlabel: "position along dashed line (µm)",
+      series: [
+        { x: xs, y: keep(sl(recStd)), cls: "s-raw" },
+        { x: xs, y: keep(sl(truthMasked)), cls: "s-truth" },
+        { x: xs, y: keep(sl(recPag)), cls: "s-pag" },
+      ],
+    });
+
+    // Filter response vs. spatial frequency (line pairs per mm)
+    const fNyq = 1 / (2 * s.px / 1000);
+    const nPts = 240, fx = [], boost = [], pag = [], net = [];
+    const dmuT = T.d / T.mu;
+    for (let i = 0; i < nPts; i++) {
+      const f = fNyq * i / (nPts - 1);           // cycles per mm
+      const K = 2 * Math.PI * f * 1000;          // radians per metre
+      const b = 1 + g.zEff * dmuT * K * K;
+      const h = 1 / (1 + g.c * K * K);
+      fx.push(f); boost.push(b); pag.push(h); net.push(b * h);
+    }
+    const fHalf = 1 / (2 * Math.PI * g.L) / 1000; // where the Paganin gain is 0.5
+    plot($("filter-plot"), {
+      xmin: 0, xmax: fNyq, ymin: 0, ymax: 3, refY: 1,
+      xlabel: "detail fineness (line pairs per mm)",
+      vmark: { x: fHalf, label: `filter halves details ≈ ${fmt(1000 / fHalf / 2, 0)} µm wide` },
+      series: [
+        { x: fx, y: boost, cls: "s-raw" },
+        { x: fx, y: pag, cls: "s-pag" },
+        { x: fx, y: net, cls: "s-net" },
+      ],
+    });
+  }
+
+  let queued = false;
+  const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; render(); }); } };
+  for (const id of ["os", "cs", "px", "db", "noise"]) $(id).addEventListener("input", schedule);
+  document.querySelectorAll("[data-db]").forEach(b => b.addEventListener("click", () => {
+    const v = b.dataset.db === "tissue" ? TISSUE_DB : +b.dataset.db;
+    $("db").value = sliderFromDb(v); schedule();
+  }));
+
+  // ---------- .log parsing ----------
+  function setSlider(id, v) {
+    const el = $(id);
+    if (v > +el.max) el.max = String(Math.ceil(v * 1.2));
+    if (v < +el.min) el.min = String(Math.floor(v * 0.8 * 100) / 100);
+    el.value = String(v);
+  }
+  function parseLog(txt) {
+    const num = re => { const m = txt.match(re); return m ? parseFloat(m[1]) : null; };
+    const os = num(/Object\s*to\s*Source\s*\(mm\)\s*=\s*([\d.]+)/i);
+    const cs = num(/Camera\s*to\s*Source\s*\(mm\)\s*=\s*([\d.]+)/i);
+    const px = num(/Image\s*Pixel\s*Size\s*\(um\)\s*=\s*([\d.]+)/i);
+    const kv = num(/Source\s*Voltage\s*\(kV\)\s*=\s*([\d.]+)/i);
+    const fm = txt.match(/^\s*Filter\s*=\s*(.+)$/im);
+    const found = [], missing = [];
+    (os ? found : missing).push("Object to Source");
+    (cs ? found : missing).push("Camera to Source");
+    (px ? found : missing).push("Image Pixel Size");
+    if (os) setSlider("os", os);
+    if (cs) setSlider("cs", cs);
+    if (px) setSlider("px", px);
+    let msg = found.length ? `Read: ${found.join(", ")}.` : "No geometry fields found.";
+    if (missing.length) msg += ` Not found: ${missing.join(", ")}.`;
+    if (kv) msg += ` Voltage ${kv} kV${fm ? ", filter " + fm[1].trim() : ""} (shown for reference; the simulation uses 20 keV).`;
+    $("log-msg").textContent = msg;
+    schedule();
+  }
+  $("log-apply").addEventListener("click", () => parseLog($("log-text").value));
+  $("log-file").addEventListener("change", e => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => { $("log-text").value = String(r.result).slice(0, 20000); parseLog(String(r.result)); };
+    r.readAsText(f);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

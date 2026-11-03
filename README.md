@@ -3,6 +3,9 @@
 
 ### Quick Start Guide - For detailed instructions, refer to the [SkyScan 1272 User Manual](https://github.com/Faculty-of-Agriculture-CSI-Microscopy/Skyscan-1272-MicroCT/blob/main/manuals/1272_UserManual_v1_2.pdf).
 
+### Phase contrast enhancement
+- [Phase retrieval simulator](phase-retrieval.html) – interactive explanation of Paganin phase retrieval (NRecon 2.0+) for SkyScan 1272 scans. Load a scan `.log` file to use your own geometry. The sample shown is simulated.
+
 ### PURPOSE
 
 - Provide a Standard Operating Procedure (SOP) for scanning samples with SkyScan 1272.
