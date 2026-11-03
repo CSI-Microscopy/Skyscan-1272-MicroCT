@@ -77,7 +77,7 @@ header p { color: var(--muted); }
 .ctl-top output { font-family: var(--f-mono); font-size: 0.85rem; }
 .field { font: 400 0.72rem/1.3 var(--f-mono); color: var(--muted); }
 input[type="range"] { width: 100%; accent-color: var(--pag); margin: 2px 0; }
-.group-title { font: 500 0.72rem/1 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); padding-top: 4px; border-top: 1px solid var(--line); padding-top: 14px; }
+.group-title { font: 500 0.72rem/1 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); border-top: 1px solid var(--line); padding-top: 14px; }
 .group-title:first-child { border-top: 0; padding-top: 0; }
 .presets { display: flex; flex-wrap: wrap; gap: 6px; }
 button {
@@ -240,7 +240,7 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
             <span><i class="l-pag"></i>After Paganin filter</span>
           </div>
           <svg class="plot" id="proj-plot" viewBox="0 0 640 240" role="img" aria-label="Projection intensity profile"></svg>
-          <p class="caption">Vertical axis: transmitted intensity relative to the flat field (1 = no sample). Horizontal axis: position across the camera, in the sample's own scale.</p>
+          <p class="caption">Vertical axis: transmitted intensity relative to the flat field (1 = no sample). Horizontal axis: position across the camera, in the sample's own scale. The simulated sample always fills the same share of the field of view, so its physical width changes with pixel size (see "Simulated sample width").</p>
         </div>
       </section>
 
@@ -538,6 +538,10 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
     }
     truth[iy * N + ix] = v / 4 / 1000;
   }
+  const truthMasked = truth.map((v, i) => {
+    const c0 = (N - 1) / 2, ix = i % N - c0, iy = Math.floor(i / N) - c0;
+    return ix * ix + iy * iy > c0 * c0 ? NaN : v;
+  });
   const PROFILE_ROW = Math.round((N - 1) / 2 - PROFILE_Y * HALF);
 
   // ---------- random numbers (seeded, so noise is identical between redraws) ----------
@@ -559,14 +563,14 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
 
   function readState() {
     return {
-      os: +$("os").value, cs: +$("cs").value, px: +$("px").value,
+      os: +$("os").value, cs: Math.max(+$("cs").value, +$("os").value + 1), csRaw: +$("cs").value, px: +$("px").value,
       db: dbFromSlider(+$("db").value), noise: +$("noise").value,
     };
   }
 
   // M = CS/OS ; z_eff = OS(CS−OS)/CS ; c = z_eff (δ/β) λ/4π ; L = √c ; N_F = p²/(λ z_eff)
   function geometry(s) {
-    const os = s.os / 1000, cs = Math.max(s.cs, s.os + 1) / 1000;
+    const os = s.os / 1000, cs = s.cs / 1000;
     const R2 = cs - os;
     const zEff = os * R2 / cs;
     const mag = cs / os;
@@ -685,17 +689,17 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
       ["Magnification", fmt(g.mag, 2) + "×", "M = CS / OS"],
       ["Effective distance", fmt(g.zEff * 1000, 1) + " mm", "z_eff = OS·(CS−OS)/CS"],
       ["Fresnel number", fmt(g.NF, 2), "N_F = p² / (λ·z_eff)"],
-      ["Smoothing length", fmt(g.L * 1e6, 1) + " µm", "L = √(z_eff·δ/β·λ/4π)"],
-      ["Smoothing in pixels", fmt(g.L / g.p, 1) + " px", "L / pixel size"],
+      ["Smoothing length", `${fmt(g.L * 1e6, 1)} µm · ${fmt(g.L / g.p, 1)} px`, "L = √(z_eff·δ/β·λ/4π)"],
+      ["Simulated sample width", fmt(2 * PHANTOM[0].r * HALF * s.px, 0) + " µm", "fills 86% of the field of view"],
       ["Tissue δ/β (model)", fmt(TISSUE_DB, 0), "at 20 keV, approximate"],
     ];
     $("numbers").innerHTML = items.map(([k, v, f]) =>
       `<div class="num"><span class="k">${k}</span><span class="v">${v}</span><span class="f">${f}</span></div>`).join("");
-    const w = $("nf-warn");
-    if (g.NF < 1) {
-      w.hidden = false;
-      w.textContent = "Fresnel number below 1: fringes are wide compared with a pixel. The simple model used in this simulation is less accurate here.";
-    } else w.hidden = true;
+    const w = $("nf-warn"), msgs = [];
+    if (s.csRaw <= s.os) msgs.push(`Source to camera (${fmt(s.csRaw, 1)} mm) must be larger than source to sample. Using ${fmt(s.cs, 1)} mm.`);
+    if (g.NF < 1) msgs.push("Fresnel number below 1: fringes are wide compared with a pixel. The simple model used in this simulation is less accurate here.");
+    w.hidden = !msgs.length;
+    w.textContent = msgs.join(" ");
   }
 
   function drawStatus(s) {
@@ -710,8 +714,10 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
   const Iz = new Float64Array(N), Ib = new Float64Array(N), Ipag = new Float64Array(N);
   const lnStd = new Float64Array(N), lnPag = new Float64Array(N);
   const HP = new Float64Array(M);
-  const sinoStd = [], sinoPag = [];
-  for (let a = 0; a < NA; a++) { sinoStd.push(new Float64Array(N)); sinoPag.push(new Float64Array(N)); }
+  const sinoStd = [], sinoPag = [], camera = [];
+  for (let a = 0; a < NA; a++) { sinoStd.push(new Float64Array(N)); sinoPag.push(new Float64Array(N)); camera.push(new Float64Array(N)); }
+  // Cache: the camera images and the standard reconstruction depend only on geometry and noise, not on δ/β
+  let cameraKey = "", recStd = null, prof0 = null;
 
   function backproject(sino) {
     const img = new Float64Array(N * N);
@@ -744,7 +750,7 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
     const p = g.p, p2 = p * p;
 
     $("os-v").textContent = fmt(s.os, 1) + " mm";
-    $("cs-v").textContent = fmt(s.cs, 1) + " mm";
+    $("cs-v").textContent = fmt(s.csRaw, 1) + " mm";
     $("px-v").textContent = fmt(s.px, 2) + " µm";
     $("db-v").textContent = fmt(s.db, 0);
     $("noise-v").textContent = fmt(s.noise, 2) + " %";
@@ -754,11 +760,43 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
     // Paganin filter: 1 / (1 + c·K²), with K² converted from 1/pixel² to 1/m²
     for (let k = 0; k < M; k++) HP[k] = 1 / (1 + g.c * K2PIX[k] / p2);
 
+    const key = [s.os, s.cs, s.px, s.noise].join("|");
+    const fresh = key !== cameraKey;
+    if (fresh) simulateCamera(s, g);
+
+    let prof = null;
+    for (let a = 0; a < NA; a++) {
+      Ib.set(camera[a]);
+      // Paganin filter on the intensity (outside the row is flat field = 1)
+      applyFilter(Ib, HP, 1, Ipag);
+      for (let i = 0; i < N; i++) lnPag[i] = -Math.log(Math.max(Ipag[i], 1e-3));
+      if (a === 0) prof = { I0: prof0, Ib: camera[0], Ip: Float64Array.from(Ipag) };
+      // Ramp filter for reconstruction; divide by p to get 1/m
+      applyFilter(lnPag, rampH, 0, sinoPag[a]);
+      for (let i = 0; i < N; i++) sinoPag[a][i] /= p;
+    }
+
+    const recPag = backproject(sinoPag);
+    for (let i = 0; i < N * N; i++) recPag[i] /= 1000; // 1/m → 1/mm
+    if (fresh) {
+      for (let a = 0; a < NA; a++) {
+        for (let i = 0; i < N; i++) lnStd[i] = -Math.log(camera[a][i]);
+        applyFilter(lnStd, rampH, 0, sinoStd[a]);
+        for (let i = 0; i < N; i++) sinoStd[a][i] /= p;
+      }
+      recStd = backproject(sinoStd);
+      for (let i = 0; i < N * N; i++) recStd[i] /= 1000;
+      cameraKey = key;
+    }
+    drawAll(s, g, recPag, prof);
+  }
+
+  // What the camera records at every angle: absorption + phase fringes, detector blur, photon noise
+  function simulateCamera(s, g) {
+    const p = g.p, p2 = p * p;
     const rand = rng(12345);
     const gauss = () => { const u = Math.max(rand(), 1e-12), v = rand(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v); };
     const sigma = s.noise / 100;
-    let prof = null;
-
     for (let a = 0; a < NA; a++) {
       const bm = baseMu[a], bd = baseD[a];
       for (let i = 0; i < N; i++) { Pmu[i] = bm[i] * p; Pd[i] = bd[i] * p; I0[i] = Math.exp(-Pmu[i]); }
@@ -775,27 +813,13 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
         let v = 0;
         for (let j = -3; j <= 3; j++) { const ii = i + j; v += BK[j + 3] * (ii >= 0 && ii < N ? Iz[ii] : 1); }
         v += sigma * Math.sqrt(Math.max(v, 0)) * gauss();
-        Ib[i] = Math.max(v, 1e-3);
+        camera[a][i] = Math.max(v, 1e-3);
       }
-      // Paganin filter on the intensity (outside the row is flat field = 1)
-      applyFilter(Ib, HP, 1, Ipag);
-      for (let i = 0; i < N; i++) {
-        lnStd[i] = -Math.log(Ib[i]);
-        lnPag[i] = -Math.log(Math.max(Ipag[i], 1e-3));
-      }
-      if (a === 0) prof = { I0: Float64Array.from(I0), Ib: Float64Array.from(Ib), Ip: Float64Array.from(Ipag) };
-      // Ramp filter for reconstruction; divide by p to get 1/m
-      applyFilter(lnStd, rampH, 0, sinoStd[a]);
-      applyFilter(lnPag, rampH, 0, sinoPag[a]);
-      for (let i = 0; i < N; i++) { sinoStd[a][i] /= p; sinoPag[a][i] /= p; }
+      if (a === 0) prof0 = Float64Array.from(I0);
     }
+  }
 
-    const recStd = backproject(sinoStd), recPag = backproject(sinoPag);
-    for (let i = 0; i < N * N; i++) { recStd[i] /= 1000; recPag[i] /= 1000; } // 1/m → 1/mm
-    const truthMasked = truth.map((v, i) => {
-      const c0 = (N - 1) / 2, ix = i % N - c0, iy = Math.floor(i / N) - c0;
-      return ix * ix + iy * iy > c0 * c0 ? NaN : v;
-    });
+  function drawAll(s, g, recPag, prof) {
     drawSlice($("c-truth"), truthMasked, true);
     drawSlice($("c-std"), recStd, true);
     drawSlice($("c-pag"), recPag, true);
@@ -856,6 +880,8 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
   let queued = false;
   const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(() => { queued = false; render(); }); } };
   for (const id of ["os", "cs", "px", "db", "noise"]) $(id).addEventListener("input", schedule);
+  // Redraw on theme change so the canvas profile line picks up the new color
+  try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", schedule); } catch (e) {}
   document.querySelectorAll("[data-db]").forEach(b => b.addEventListener("click", () => {
     const v = b.dataset.db === "tissue" ? TISSUE_DB : +b.dataset.db;
     $("db").value = sliderFromDb(v); schedule();
@@ -866,25 +892,33 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
     const el = $(id);
     if (v > +el.max) el.max = String(Math.ceil(v * 1.2));
     if (v < +el.min) el.min = String(Math.floor(v * 0.8 * 100) / 100);
+    el.step = "any"; // keep the exact logged value instead of snapping to the slider step
     el.value = String(v);
   }
   function parseLog(txt) {
-    const num = re => { const m = txt.match(re); return m ? parseFloat(m[1]) : null; };
-    const os = num(/Object\s*to\s*Source\s*\(mm\)\s*=\s*([\d.]+)/i);
-    const cs = num(/Camera\s*to\s*Source\s*\(mm\)\s*=\s*([\d.]+)/i);
-    const px = num(/Image\s*Pixel\s*Size\s*\(um\)\s*=\s*([\d.]+)/i);
-    const kv = num(/Source\s*Voltage\s*\(kV\)\s*=\s*([\d.]+)/i);
+    // Number after "=": accepts decimal point or comma, and exponent notation. Returns null unless > 0.
+    const NUM = "([-+]?\\d+(?:[.,]\\d+)?(?:[eE][-+]?\\d+)?)";
+    const num = label => {
+      const m = txt.match(new RegExp(label + "\\s*=\\s*" + NUM, "i"));
+      if (!m) return null;
+      const v = parseFloat(m[1].replace(",", "."));
+      return Number.isFinite(v) && v > 0 ? v : null;
+    };
+    const os = num("Object\\s*to\\s*Source\\s*\\(mm\\)");
+    const cs = num("Camera\\s*to\\s*Source\\s*\\(mm\\)");
+    const px = num("Image\\s*Pixel\\s*Size\\s*\\(um\\)");
+    const kv = num("Source\\s*Voltage\\s*\\(kV\\)");
     const fm = txt.match(/^\s*Filter\s*=\s*(.+)$/im);
     const found = [], missing = [];
-    (os ? found : missing).push("Object to Source");
-    (cs ? found : missing).push("Camera to Source");
-    (px ? found : missing).push("Image Pixel Size");
-    if (os) setSlider("os", os);
-    if (cs) setSlider("cs", cs);
-    if (px) setSlider("px", px);
+    (os !== null ? found : missing).push("Object to Source");
+    (cs !== null ? found : missing).push("Camera to Source");
+    (px !== null ? found : missing).push("Image Pixel Size");
+    if (os !== null) setSlider("os", os);
+    if (cs !== null) setSlider("cs", cs);
+    if (px !== null) setSlider("px", px);
     let msg = found.length ? `Read: ${found.join(", ")}.` : "No geometry fields found.";
     if (missing.length) msg += ` Not found: ${missing.join(", ")}.`;
-    if (kv) msg += ` Voltage ${kv} kV${fm ? ", filter " + fm[1].trim() : ""} (shown for reference; the simulation uses 20 keV).`;
+    if (kv !== null) msg += ` Voltage ${kv} kV${fm ? ", filter " + fm[1].trim() : ""} (shown for reference; the simulation uses 20 keV).`;
     $("log-msg").textContent = msg;
     schedule();
   }
@@ -894,6 +928,7 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
     if (!f) return;
     const r = new FileReader();
     r.onload = () => { $("log-text").value = String(r.result).slice(0, 20000); parseLog(String(r.result)); };
+    r.onerror = () => { $("log-msg").textContent = `Could not read ${f.name}. Copy the file's text into the box above instead.`; };
     r.readAsText(f);
   });
 
