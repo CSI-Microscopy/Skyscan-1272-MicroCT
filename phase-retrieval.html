@@ -1857,7 +1857,7 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
   const links = [...toc.querySelectorAll('a[href^="#h-"]')];
   const targets = links.map(a => document.getElementById(a.getAttribute("href").slice(1)));
   const root = document.documentElement;
-  let queued = false, shown = -2;
+  let queued = false, shown = -2, refit = false;   // refit: the bar changed size, re-check the link is in view
   function mark() {
     queued = false;
     const barBottom = toc.getBoundingClientRect().bottom;
@@ -1869,19 +1869,21 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
     if (scrollY + innerHeight >= root.scrollHeight - 4) {
       targets.forEach((t, i) => { if (t && t.getBoundingClientRect().top < innerHeight - 40) cur = i; });
     }
-    if (cur === shown) return;                 // only touch the bar when the current part changes
-    shown = cur;
-    links.forEach((a, i) => { if (i === cur) a.setAttribute("aria-current", "location"); else a.removeAttribute("aria-current"); });
+    // only touch the bar when the current part changes or the bar was resized, never while the reader scrolls it sideways
+    if (cur === shown && !refit) return;
+    if (cur !== shown) links.forEach((a, i) => { if (i === cur) a.setAttribute("aria-current", "location"); else a.removeAttribute("aria-current"); });
+    shown = cur; refit = false;
     const a = links[cur];
     if (a && (a.offsetLeft < toc.scrollLeft || a.offsetLeft + a.offsetWidth > toc.scrollLeft + toc.clientWidth)) toc.scrollLeft = a.offsetLeft - 40;
   }
   const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(mark); } };
+  const resized = () => { refit = true; schedule(); };
   // the sidebar offset and heading scroll margins follow the bar's real height (it grows with the font size)
   const setHeight = () => root.style.setProperty("--toc-h", toc.offsetHeight + "px");
   setHeight();
-  if ("ResizeObserver" in window) new ResizeObserver(() => { setHeight(); schedule(); }).observe(toc);
+  if ("ResizeObserver" in window) new ResizeObserver(() => { setHeight(); resized(); }).observe(toc);
   addEventListener("scroll", schedule, { passive: true });
-  addEventListener("resize", schedule);
+  addEventListener("resize", resized);
   addEventListener("hashchange", schedule);
   addEventListener("load", schedule);          // images and fonts can move the headings after the first pass
   if (document.fonts) document.fonts.ready.then(schedule);
