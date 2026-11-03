@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="description" content="Interactive simulation of Paganin phase retrieval for SkyScan 1272 micro-CT data.">
+<meta name="description" content="Paganin phase retrieval on the SkyScan 1272: an interactive simulator, a real fly projection, and a GPU case study of full reconstructions, written as teaching material for graduate students.">
 <title>SkyScan 1272 Phase Retrieval</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -171,6 +171,73 @@ ol.steps li::marker { font-family: var(--f-mono); color: var(--muted); }
 .note ul { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
 .warn { font-size: 0.82rem; color: var(--raw); }
 code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg); padding: 1px 4px; border-radius: 3px; }
+
+/* Parts 3-7: full-width case study below the simulator; text in a reading column, figures at full width */
+:root { --paper: #FFFFFF; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper: #E9EDF1; } }
+:root[data-theme="dark"] { --paper: #E9EDF1; }
+.toc { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 4px; }
+.toc a { display: inline-flex; align-items: baseline; gap: 6px; font-size: 0.82rem; color: var(--ink); text-decoration: none; border: 1px solid var(--line); border-radius: 4px; padding: 5px 9px; background: var(--surface); }
+.toc a:hover { border-color: var(--muted); }
+.toc a span { font: 500 0.72rem/1 var(--f-mono); color: var(--pag); }
+.toc a:focus-visible, .figure a:focus-visible { outline: 2px solid var(--pag); outline-offset: 2px; }
+section > .eyebrow, .cs-col > .eyebrow { color: var(--pag); }
+.cs { display: grid; gap: 52px; margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--line); }
+.cs-sec { display: grid; gap: 18px; min-width: 0; }
+.cs-col { display: grid; gap: 14px; max-width: 820px; min-width: 0; }
+.cs-col > ul, .cs-col ol.answer, .cs-col ol.refs { margin: 0; padding-left: 1.3em; display: grid; gap: 8px; max-width: 72ch; }
+ol.answer li::marker { font: 600 0.95rem var(--f-display); color: var(--pag); }
+ol.refs li { font-size: 0.88rem; }
+.cs-col h3 { margin-top: 6px; }
+figure.figure { margin: 0; }
+.figure > .paper { display: block; background: var(--paper); border-radius: 4px; padding: 6px; }
+.figure > .paper img { display: block; width: 100%; height: auto; }
+.caption b { color: var(--ink); font-weight: 600; }
+table.data.text { min-width: 560px; }
+table.data.text td { vertical-align: top; }
+.lesson { border-top: 2px solid var(--pag); background: var(--note-bg); border-radius: 0 0 6px 6px; padding: 12px 16px 14px; display: grid; gap: 6px; font-size: 0.9rem; }
+.lesson .eyebrow { color: var(--pag); }
+dl.qa { display: grid; grid-template-columns: 8.5rem minmax(0, 1fr); gap: 10px 18px; margin: 0; }
+dl.qa dt { font: 500 0.72rem/1.6 var(--f-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding-top: 2px; }
+dl.qa dd { margin: 0; min-width: 0; }
+dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+@media (max-width: 560px) { dl.qa { grid-template-columns: minmax(0, 1fr); gap: 2px; } dl.qa dd { margin-bottom: 10px; } }
+
+.explorer { grid-template-columns: minmax(0, 1fr) 260px; gap: 20px; }
+@media (max-width: 820px) { .explorer { grid-template-columns: minmax(0, 1fr); } }
+.explorer-plot, .explorer-ctl { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.readout { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 0.84rem; }
+.readout dt { color: var(--muted); }
+.readout dd { margin: 0; font-family: var(--f-mono); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+.legend .l-dot { width: 9px; height: 9px; border: 0; border-radius: 50%; background: var(--raw); }
+.cx-dot { fill: var(--raw); stroke: var(--surface); stroke-width: 1.5; }
+.cx-band { fill: var(--note-bg); }
+
+.vp-bar { display: flex; flex-wrap: wrap; gap: 10px 18px; justify-content: space-between; }
+.vp-group { display: flex; flex-wrap: wrap; gap: 6px; }
+.vp-group button[aria-pressed="true"] { background: var(--pag); border-color: var(--pag); color: var(--surface); }
+.vp-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+@media (max-width: 1000px) { .vp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 480px) { .vp-grid { grid-template-columns: minmax(0, 1fr); } }
+.vp-cell { display: grid; gap: 6px; align-content: start; min-width: 0; }
+.vp-cell .t { font-weight: 600; font-size: 0.88rem; display: flex; align-items: center; gap: 8px; }
+.vp-cell .t i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.vp-cell .d { font-size: 0.78rem; color: var(--muted); line-height: 1.4; }
+.vp-ov { position: relative; aspect-ratio: 1; max-width: 100%; background: var(--plate); border-radius: 3px; overflow: hidden; }
+.vp-ov img { display: block; width: 100%; height: 100%; }
+.vp-box { position: absolute; border: 1.5px solid var(--raw); }
+.vp-win { position: absolute; border: 1px solid #FFFFFF; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5); }
+.vp-view { position: relative; aspect-ratio: 1; max-width: 100%; overflow: hidden; background: var(--plate); border-radius: 3px; cursor: grab; touch-action: none; user-select: none; }
+.vp-view:active { cursor: grabbing; }
+.vp-view:focus-visible { outline: 2px solid var(--pag); outline-offset: 2px; }
+.vp-view img { position: absolute; max-width: none; height: auto; image-rendering: pixelated; pointer-events: none; }
+
+.sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.qs { display: grid; }
+.qs details { border-top: 1px solid var(--line); padding: 10px 0; }
+.qs details:last-child { border-bottom: 1px solid var(--line); }
+.qs summary { cursor: pointer; font-weight: 600; font-size: 0.92rem; }
+.qs details p { margin-top: 8px; font-size: 0.9rem; }
 </style>
 </head>
 <body>
@@ -179,13 +246,22 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
   <header>
     <a class="eyebrow back" href="./">&larr; SkyScan 1272 guide</a>
     <span class="eyebrow">Bruker SkyScan 1272 · NRecon · Paganin method</span>
-    <h1>Phase retrieval on your SkyScan 1272 scans</h1>
-    <p>Enter the geometry from your scan's <code>.log</code> file to see the phase fringes your camera records and what one setting, δ/β, does to them. The sample is simulated soft tissue, not your data.</p>
+    <h1>Phase retrieval on the SkyScan 1272</h1>
+    <p>Teaching material for graduate students. We explain Paganin phase retrieval with a simulator, apply it to a real projection of a fly, and then test it on full GPU reconstructions of the same scan, including the control that matters: plain smoothing.</p>
+    <nav class="toc" aria-label="Contents">
+      <a href="#h-geo"><span>1</span>Simulator</a>
+      <a href="#h-fly"><span>2</span>One real projection</a>
+      <a href="#h-case"><span>3</span>Case study: full reconstructions</a>
+      <a href="#h-vol"><span>4</span>The three volumes</a>
+      <a href="#h-steps"><span>5</span>Using it in NRecon</a>
+      <a href="#h-math"><span>6</span>The math</a>
+      <a href="#h-verify"><span>7</span>Limits and sources</a>
+    </nav>
   </header>
 
   <div class="layout">
     <aside class="controls" aria-label="Scan and reconstruction settings">
-      <div class="group-title">From your .log file</div>
+      <div class="group-title">From the scan's .log file</div>
 
       <details class="log">
         <summary>Paste or load a .log file</summary>
@@ -194,7 +270,7 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
           <button type="button" id="log-apply">Read values</button>
           <input type="file" id="log-file" accept=".log,.txt">
         </div>
-        <div id="log-msg">The file stays in your browser.</div>
+        <div id="log-msg">The file is read in the browser and never uploaded.</div>
       </details>
 
       <div class="ctl">
@@ -235,8 +311,9 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
 
     <main>
       <section aria-labelledby="h-geo">
-        <h2 id="h-geo">Your geometry</h2>
-        <p>The SkyScan 1272 has a small X-ray spot and no gratings. X-rays bend slightly at boundaries inside the sample, and over the gap between the sample and the camera that bending turns into bright and dark lines along every edge. That gap is what the phase effect depends on.</p>
+        <span class="eyebrow">Part 1 · Simulator</span>
+        <h2 id="h-geo">The scan geometry</h2>
+        <p>The SkyScan 1272 has a small X-ray spot and no gratings. X-rays bend slightly at boundaries inside the sample, and over the gap between the sample and the camera that bending turns into bright and dark lines along every edge. That gap is what the phase effect depends on. The sliders on the left take their values from a scan's <code>.log</code> file; the sample in this part is simulated soft tissue.</p>
         <div class="figure">
           <svg class="geo" id="geo" viewBox="0 0 640 170" role="img" aria-label="Source, sample and camera positions"></svg>
           <div class="numbers" id="numbers"></div>
@@ -276,7 +353,7 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
             <div class="slice">
               <div class="t"><i style="background: var(--pag)"></i>With phase retrieval</div>
               <canvas id="c-pag" width="192" height="192" aria-label="Phase-retrieved reconstruction"></canvas>
-              <div class="d" id="pag-desc">Paganin filter at the δ/β you set.</div>
+              <div class="d" id="pag-desc">Paganin filter at the chosen δ/β.</div>
             </div>
           </div>
           <div class="key">
@@ -301,17 +378,18 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
         <div class="figure">
           <div class="legend">
             <span><i class="l-raw"></i>Phase boost for tissue</span>
-            <span><i class="l-pag"></i>Paganin filter at your δ/β</span>
+            <span><i class="l-pag"></i>Paganin filter at the chosen δ/β</span>
             <span><i class="l-net"></i>Net result</span>
           </div>
           <svg class="plot" id="filter-plot" viewBox="0 0 640 240" role="img" aria-label="Filter response versus detail size"></svg>
-          <p class="caption">Horizontal axis: detail fineness in line pairs per mm, from coarse (left) to the finest your pixel size can show (right). Vertical axis: gain, where 1 means unchanged. Detector blur is not included in this plot.</p>
+          <p class="caption">Horizontal axis: detail fineness in line pairs per mm, from coarse (left) to the finest the pixel size can show (right). Vertical axis: gain, where 1 means unchanged. Detector blur is not included in this plot.</p>
         </div>
       </section>
 
       <section aria-labelledby="h-fly">
+        <span class="eyebrow">Part 2 · One real projection</span>
         <h2 id="h-fly">Real data: a fly scanned on this SkyScan 1272</h2>
-        <p>Everything above is simulated. This section uses one real projection image (number 531 of 1800) from a fly scan on the facility's SkyScan 1272, and runs the same Paganin filter on it live. The fly is mounted on a metal pin.</p>
+        <p>Everything above is simulated. Here we use one real projection image (number 531 of 1800) from a fly scan on the facility's SkyScan 1272 and run the same Paganin filter on it live. The fly is mounted on a metal pin. Part 3 then uses all 1800 projections of the same scan.</p>
         <div class="figure">
           <img class="fly-thumb" id="fly-thumb" src="data:image/jpeg;base64,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" alt="Projection image of a fly on a pin; the head region is outlined" width="1008" height="672">
           <p class="caption">The full projection as the camera recorded it after flat-field correction. Dark means more X-rays were absorbed. The orange box is the region analysed below (360 × 360 pixels, 2.9 × 2.9 mm).</p>
@@ -336,7 +414,7 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
             <input type="range" id="fly-db" min="0" max="1000" step="1" value="700">
             <div class="presets">
               <button type="button" data-flydb="0">Off</button>
-              <button type="button" data-flydb="500">500</button>
+              <button type="button" data-flydb="600">600</button>
               <button type="button" data-flydb="2000">2000</button>
               <button type="button" data-flydb="8000">8000</button>
             </div>
@@ -370,12 +448,12 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
         <h3>What the measurements show</h3>
         <div class="tbl-wrap">
           <table class="data">
-            <thead><tr><th>δ/β</th><th>Smoothing length</th><th>Bright rim</th><th>Noise in air</th><th>What you see</th></tr></thead>
+            <thead><tr><th>δ/β</th><th>Smoothing length</th><th>Bright rim</th><th>Noise in air</th><th>What it looks like</th></tr></thead>
             <tbody id="fly-table">
-              <tr data-db="0"><td class="n">off</td><td class="n L">–</td><td class="n rim">+3.4%</td><td class="n noise">1.02%</td><td>Fringe at every edge, grainy</td></tr>
-              <tr data-db="500"><td class="n">500</td><td class="n L">8.4 µm (1.0 px)</td><td class="n rim">+1.6%</td><td class="n noise">0.57%</td><td>Rim reduced, detail kept</td></tr>
-              <tr data-db="2000" class="best"><td class="n">2000</td><td class="n L">16.8 µm (2.1 px)</td><td class="n rim">−0.2%</td><td class="n noise">0.36%</td><td>Rim gone, cuticle lines still visible</td></tr>
-              <tr data-db="8000"><td class="n">8000</td><td class="n L">33.6 µm (4.1 px)</td><td class="n rim">−1.3%</td><td class="n noise">0.21%</td><td>Edge smeared into the air, fine structure blurred away</td></tr>
+              <tr data-result-db="0"><td class="n">off</td><td class="n L">–</td><td class="n rim">+3.4%</td><td class="n noise">1.02%</td><td>Fringe at every edge, grainy</td></tr>
+              <tr data-result-db="600" class="best"><td class="n">600</td><td class="n L">9.2 µm (1.1 px)</td><td class="n rim">–</td><td class="n noise">–</td><td>Matches the average edge of the whole scan (Part 3); this sharp head edge keeps part of its rim</td></tr>
+              <tr data-result-db="2000"><td class="n">2000</td><td class="n L">16.8 µm (2.1 px)</td><td class="n rim">−0.2%</td><td class="n noise">0.36%</td><td>Rim gone at this edge, the sharpest in the scan; about 3× more than the average edge needs</td></tr>
+              <tr data-result-db="8000"><td class="n">8000</td><td class="n L">33.6 µm (4.1 px)</td><td class="n rim">−1.3%</td><td class="n noise">0.21%</td><td>Edge smeared into the air, fine structure blurred away</td></tr>
             </tbody>
           </table>
         </div>
@@ -397,33 +475,355 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
         <div class="note">
           <strong>Reading these results</strong>
           <ul>
-            <li>The phase fringe in this scan is weak (about 3% against 1% noise). <span class="tag">Inference</span> That is expected for 8.15 µm pixels at 100 kV: a Fresnel number near 37 means fringes are thin compared with a pixel.</li>
-            <li>Phase retrieval still helps: at δ/β ≈ 2000 the rim disappears and noise drops about 3×, at the cost of about 2 pixels of smoothing.</li>
-            <li><span class="tag">Unverified</span> The 30 keV effective energy is an estimate for 100 kV with no filter. A different energy shifts which δ/β matches, so in NRecon try a range around 1000–3000 on a preview slice rather than one fixed number.</li>
+            <li>The phase fringe in this scan is weak: about 3% against 1% noise at the sharpest edge of the head, and only 0.21% averaged over all clean edges (Part 3, Test 5). <span class="tag">Inference</span> That is expected for 8.15 µm pixels at 100 kV: a Fresnel number near 37 means fringes are thin compared with a pixel.</li>
+            <li>On this projection the rim at the head edge disappears only at δ/β ≈ 2000. Averaged over clean edges in 180 projections, the fringe disappears at δ/β ≈ 580. A single sharp edge overstates what the whole sample needs, by about 3× here.</li>
+            <li><span class="tag">Unverified</span> The 30 keV effective energy is an estimate for 100 kV with no filter. A different assumed energy rescales the δ/β number for the same filter: a program assuming energy E needs δ/β × E / 30 keV. Part 5 explains how to carry the value over to NRecon.</li>
             <li>The steel pin is far denser than the fly. Paganin assumes one material, so the pin and its surroundings will look wrong after retrieval. The fly cuticle is what the setting is tuned for.</li>
-            <li>This is one projection. In NRecon the same filter is applied to all 1800 projections before reconstruction, so the slices gain the same lower noise and lose the edge halos.</li>
-            <li><span class="tag">Inference</span> For stronger phase contrast in future insect scans: smaller pixel size, no camera binning if the field of view allows, and a lower voltage (about 40–60 kV), which also raises absorption contrast in the cuticle.</li>
+            <li>This is one projection. In a reconstruction the same filter is applied to all 1800 projections first. Part 3 measures what that does to the slices.</li>
           </ul>
         </div>
       </section>
 
-      <section aria-labelledby="h-steps">
-        <h2 id="h-steps">Doing it on your data</h2>
+    </main>
+  </div>
+
+  <div class="cs">
+    <section class="cs-sec" aria-labelledby="h-case">
+      <div class="cs-col">
+        <span class="eyebrow">Part 3 · Case study</span>
+        <h2 id="h-case">Does phase retrieval help a real scan?</h2>
+        <p>Parts 1 and 2 show what the filter does. Here we measure whether it improves the reconstruction of the same fly scan, or only smooths it. We reconstructed the scan more than a hundred times on a GPU with different settings and measured every result without needing a true image.</p>
+        <div class="numbers">
+          <div class="num"><span class="k">Instrument</span><span class="v">SkyScan 1272</span><span class="f">fly on a pin, coated</span></div>
+          <div class="num"><span class="k">Source</span><span class="v">100 kV · 41 µA</span><span class="f">no filter</span></div>
+          <div class="num"><span class="k">Pixel</span><span class="v">8.152 µm</span><span class="f">2×2 binning</span></div>
+          <div class="num"><span class="k">Projections</span><span class="v">1800 · 360°</span><span class="f">as scanned</span></div>
+          <div class="num"><span class="k">Effective distance</span><span class="v">43.0 mm</span><span class="f">M = 2.208</span></div>
+          <div class="num"><span class="k">Computation</span><span class="v">1 × RTX A6000</span><span class="f">PyTorch, cone-beam FDK</span></div>
+        </div>
+        <h3>The short answer</h3>
+        <ol class="answer">
+          <li><strong>The phase effect in this scan is real but small.</strong> Just outside the fly's edges, the projections are on average only 0.21% brighter than the open beam (about 3% at the sharpest edge of the head, as in Part 2).</li>
+          <li><strong>The δ/β that cancels the measured fringe is about 580</strong>, assuming a 30 keV effective energy. Higher values do not correct anything further; they only smooth.</li>
+          <li><strong>On this scan, Paganin filtering behaves almost exactly like smoothing the projections.</strong> At equal noise it keeps about as much fine detail as Gaussian smoothing. Its one measurable advantage is a smaller dark halo at edges (3.6% against about 6.5% at the same noise).</li>
+          <li><strong>The noise reduction is real and useful.</strong> δ/β = 600 lowers noise 2.4× (contrast-to-noise 68 instead of 30); δ/β = 1600 lowers it 4× (CNR 109). The cost is fine detail: structures with a 40 µm period keep 29% or 14% of their strength.</li>
+          <li><strong>No combination escapes the trade-off.</strong> All 60 combinations of phase filter, reconstruction filter, Paganin variant and number of projections fall on one "less noise for less detail" curve.</li>
+        </ol>
+      </div>
+      <figure class="figure">
+        <a href="assets/phase-retrieval/s10_headline.png" target="_blank" rel="noopener" class="paper"><img src="assets/phase-retrieval/s10_headline.png" width="2304" height="814" loading="lazy" alt="Two rows of zoomed slice crops, thorax and head, comparing NRecon, no phase retrieval, Paganin 600 with Hamming and Ram-Lak filters, Paganin 1600 and Gaussian smoothing."></a>
+        <figcaption class="caption"><b>Zoomed regions 2.1 mm across, thorax (section 690) and head (section 786).</b> From left: the vendor's NRecon slice (its own grey scale); our reconstruction without phase retrieval; Paganin δ/β = 600 with the Hamming window, as NRecon uses; the same with the sharper Ram-Lak window; Paganin 1600; plain Gaussian smoothing (σ = 2 px) as a control. Our five reconstructions share one grey scale per row. Paganin 1600 and Gaussian smoothing are hard to tell apart.</figcaption>
+      </figure>
+    </section>
+
+    <section class="cs-sec" aria-labelledby="h-regime">
+      <div class="cs-col">
+        <h2 id="h-regime">Why the effect is weak here</h2>
+        <p>For X-rays, a material's refractive index is <span class="mono">n = 1 − δ + iβ</span>. β describes absorption, which conventional CT measures; δ describes the phase shift. For soft tissue at tens of keV, δ is roughly a thousand times larger than β. A detector records only intensity, so the phase shows up only after the beam has travelled some distance past the sample, as the bright and dark fringe lines simulated in Part 1.</p>
+        <p>The <strong>Fresnel number</strong> compares the pixel size with the width of that fringe, which is about <span class="mono">√(λ·z<sub>eff</sub>)</span>:</p>
+        <div class="eq"><div class="formula">λ(30 keV) = 0.0413 nm · √(λ·z_eff) = √(0.0413 nm × 43.0 mm) ≈ 1.3 µm · N_F = p² / (λ·z_eff) = 8.15² / 1.78 ≈ 37</div></div>
+        <p>The fringe is about six times narrower than a pixel, so each pixel averages most of it away. Phase contrast becomes strong when N<sub>F</sub> approaches 1: smaller pixels, longer propagation distances or lower energies. Synchrotron imaging and high-resolution lab systems work in that regime; a binned 8 µm scan at 100 kV does not. The finite focal spot blurs the fringe further.</p>
+        <div class="lesson">
+          <span class="eyebrow">Lesson · only δ/β × λ matters</span>
+          <p>The Paganin filter depends on δ/β and the wavelength only through their product. δ/β = 1067 at 20 keV, 1600 at 30 keV and 2133 at 40 keV give the identical filter; we checked this numerically. A lab tube emits a broad spectrum, so the energy a program assumes is a convention, and the δ/β number it shows changes with it. δ/β values cannot be compared between programs unless the assumed energy is known.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cs-sec" aria-labelledby="h-control">
+      <div class="cs-col">
+        <h2 id="h-control">Phase retrieval, or just smoothing?</h2>
+        <p>The Paganin filter is a low-pass filter, and any low-pass filter lowers noise and blurs. A claim that phase retrieval improves an image therefore needs a control: the same projections smoothed with an ordinary filter, compared at equal noise.</p>
+        <p>Where phase contrast is strong, the two give very different images. Propagation has turned fine structure into large fringes, well above the noise. Smoothing leaves blurred fringes, which are wrong grey values at every boundary. Paganin's filter is built as the inverse of that propagation: it folds the fringe signal back into place, so the result is quantitatively correct and far less noisy than an absorption-only image at the same dose and resolution. Kitchen et al. (2017) report CT dose reductions of several orders of magnitude on this basis.</p>
+        <p>On this scan the fringe is only 0.21% of the beam. There is almost nothing to fold back, so the filter has little to do except smooth. <strong>The scan sits in the weak-phase regime, and our measurements show that it does not get the benefit seen in the strong-phase regime.</strong></p>
+        <div class="lesson">
+          <span class="eyebrow">Lesson · choose a control that can tell the methods apart</span>
+          <p>Paganin and Gaussian filters are both linear and act on the same data. At equal noise they must keep similar amounts of detail, whatever the physics; only the filter shapes differ. The measurement that separates them is how well each removes the fringe and its halo, because only Paganin is designed to do that. Here that difference is real but small.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cs-sec" aria-labelledby="h-method">
+      <div class="cs-col">
+        <h2 id="h-method">How we measured quality without a true image</h2>
+        <p>We wrote our own GPU reconstruction in Python with PyTorch, rather than using NRecon, so that we could try many settings and measure each the same way. It is a cone-beam FDK reconstruction (Feldkamp, Davis and Kress, 1984), the family of method NRecon uses, built from the raw projections and the scan's <code>.log</code> file. Each setting took about 20 seconds for four test slices: <strong>498</strong> (abdomen and wing), <strong>594</strong> (abdomen and thorax), <strong>690</strong> (thorax with flight muscle) and <strong>786</strong> (head).</p>
+        <p>Every setting was reconstructed twice: once from the even-numbered projections and once from the odd-numbered ones. Both halves show the same fly with independent noise. Their difference contains only noise; their agreement measures signal.</p>
+        <div class="tbl-wrap">
+          <table class="data text">
+            <thead><tr><th>Measure</th><th>What it tells us</th><th>How it is computed</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Noise</strong></td><td>Graininess, in attenuation units (×10⁻³ mm⁻¹)</td><td>Standard deviation of (even − odd) / 2: the fly cancels, the noise remains</td></tr>
+              <tr><td><strong>Contrast-to-noise (CNR)</strong></td><td>How easily tissue is told apart from air</td><td>(tissue level − air level) / noise</td></tr>
+              <tr><td><strong>Detail kept</strong></td><td>How much of a structure with a given period survives, relative to no filter (1 = all)</td><td>Cross-spectrum of the two halves, frequency by frequency, where noise averages out; reported at 20, 40 and 80 µm periods and as the period kept at half strength</td></tr>
+              <tr><td><strong>Dark halo</strong></td><td>Depth of the dark band just outside thick-tissue edges, as % of the edge height</td><td>Averaged over every such edge in the slice</td></tr>
+              <tr><td><strong>Thin-wall contrast</strong></td><td>How bright thin cuticle walls remain</td><td>Mean attenuation of structures thinner than about 8 px</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="lesson">
+          <span class="eyebrow">Lesson · not every standard metric fits the question</span>
+          <p>Fourier ring correlation (FRC), the usual resolution measure for split-data reconstructions, cannot see blur from a linear filter. It normalises each frequency ring, and a filter multiplies signal and noise in a ring by the same factor, so the ratio does not change. We also dropped edge width and overshoot, because insect tissue has no flat interior to measure them against.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cs-sec" aria-labelledby="h-t1">
+      <div class="cs-col">
+        <span class="eyebrow">Tests 1 and 2 · groundwork</span>
+        <h2 id="h-t1">Matching the vendor's geometry, and removing rings</h2>
+        <dl class="qa">
+          <dt>Why</dt><dd>Every later number depends on correct geometry, and ring artefacts would be counted as noise.</dd>
+          <dt>What we did</dt><dd>We reconstructed slice 690 with many centre-of-rotation shifts, both rotation directions, three detector-tilt values and neighbouring projection rows, and compared each with NRecon's slice. A conservation test checked the units: the total attenuation in a slice must equal the total in the matching projection row. For rings we used a correction modelled on NRecon's, one map per block of 258 projections.</dd>
+          <dt>What we found</dt><dd>
+            <ul>
+              <li>The best match is at a centre-of-rotation shift of 29.5 px, exactly NRecon's recorded post-alignment, with counter-clockwise rotation. Our first attempt used the wrong direction; doubled edges revealed it.</li>
+              <li>NRecon numbers sections from the bottom of the projection (row = 1343 − section). Detector tilt made no measurable difference.</li>
+              <li>Our values are in mm⁻¹ and pass the conservation test. NRecon's exported BMP grey scale is about 8× smaller, so absolute values here should not be compared with NRecon's files.</li>
+              <li>Away from the steel pin, our unfiltered reconstruction has the same noise relative to contrast as NRecon's. Near the pin NRecon's is lower, thanks to its beam-hardening correction, which we did not implement.</li>
+              <li>NRecon's ring setting (radius 9) reduces rings 5×, leaving them 16× weaker than random noise. We used it everywhere.</li>
+            </ul>
+          </dd>
+        </dl>
+      </div>
+    </section>
+
+    <section class="cs-sec" aria-labelledby="h-t3">
+      <div class="cs-col">
+        <span class="eyebrow">Test 3</span>
+        <h2 id="h-t3">A δ/β sweep: what each strength does</h2>
+        <p>We reconstructed the four slices with δ/β from 50 to 25 600, doubling at each step. Each doubling cuts noise by about a third, and the smallest surviving detail grows. The dark halo reaches zero near δ/β = 3200, more than five times the fringe-matched value from Test 5. At that point the halo is being blurred away, not corrected, which suggests that most of the halo in the slices has causes other than phase.</p>
+        <div class="tbl-wrap">
+          <table class="data">
+            <thead><tr><th>δ/β (30 keV)</th><th>Smoothing length</th><th>Noise ×10⁻³ mm⁻¹</th><th>CNR</th><th>40 µm kept</th><th>Half-strength period</th><th>Dark halo</th><th>Thin walls ×10⁻³ mm⁻¹</th></tr></thead>
+            <tbody>
+              <tr><td>none</td><td class="n">–</td><td class="n">9.8</td><td class="n">30</td><td class="n">100%</td><td class="n">16 µm (pixel limit)</td><td class="n">12.5%</td><td class="n">51</td></tr>
+              <tr><td>400</td><td class="n">7.5 µm</td><td class="n">4.9</td><td class="n">58</td><td class="n">38%</td><td class="n">56 µm</td><td class="n">9.4%</td><td class="n">46</td></tr>
+              <tr><td>800</td><td class="n">10.6 µm</td><td class="n">3.5</td><td class="n">77</td><td class="n">23%</td><td class="n">73 µm</td><td class="n">6.8%</td><td class="n">42</td></tr>
+              <tr class="best"><td>1600</td><td class="n">15.1 µm</td><td class="n">2.4</td><td class="n">109</td><td class="n">14%</td><td class="n">108 µm</td><td class="n">3.6%</td><td class="n">38</td></tr>
+              <tr><td>3200</td><td class="n">21.3 µm</td><td class="n">1.6</td><td class="n">159</td><td class="n">8%</td><td class="n">155 µm</td><td class="n">0%</td><td class="n">33</td></tr>
+              <tr><td>6400</td><td class="n">30.1 µm</td><td class="n">1.0</td><td class="n">235</td><td class="n">5%</td><td class="n">184 µm</td><td class="n">−5.5%</td><td class="n">30</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="caption">Averages over four slices. A negative halo means the edge has been pulled below the air level (over-corrected).</p>
+      </div>
+      <div class="figure explorer">
+        <div class="explorer-plot">
+          <span class="eyebrow">Theory against measurement · this scan's geometry</span>
+          <svg class="plot" id="cx-plot" viewBox="0 0 640 300" role="img" aria-label="Fraction of detail kept by the Paganin filter against detail period, with measured points."></svg>
+          <div class="legend"><span><i class="l-pag"></i>Chosen setting (theory)</span><span><i class="l-truth"></i>Fringe-matched, δ/β 580 at 30 keV</span><span><i class="l-dot"></i>Measured on reconstructed slices</span></div>
+        </div>
+        <div class="explorer-ctl">
+          <div class="ctl">
+            <div class="ctl-top"><label for="cx-db">δ/β</label><output id="cx-db-v" for="cx-db"></output></div>
+            <input type="range" id="cx-db" min="0" max="1000" step="1" value="556">
+          </div>
+          <div class="ctl">
+            <div class="ctl-top"><label for="cx-en">Assumed energy</label><output id="cx-en-v" for="cx-en"></output></div>
+            <input type="range" id="cx-en" min="20" max="60" step="1" value="30">
+          </div>
+          <p class="sr-only" id="cx-live" aria-live="polite"></p>
+          <dl class="readout">
+            <dt>Same filter at 30 keV</dt><dd id="cx-r30">–</dd>
+            <dt>Smoothing length √c</dt><dd id="cx-L">–</dd>
+            <dt>Kept at 20 µm period</dt><dd id="cx-20">–</dd>
+            <dt>Kept at 40 µm period</dt><dd id="cx-40">–</dd>
+            <dt>Kept at 80 µm period</dt><dd id="cx-80">–</dd>
+            <dt>Measured setting shown</dt><dd id="cx-m">–</dd>
+          </dl>
+          <p class="caption">Changing the energy and δ/β together leaves the curve in place whenever their ratio is fixed. Dots are Test 3 measurements, shown when a measured setting is within a factor of 1.2 of the chosen one. They sit slightly below the theory curve, probably because the filter also smooths along the rotation axis.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cs-sec" aria-labelledby="h-t4">
+      <div class="cs-col">
+        <span class="eyebrow">Test 4 · the control</span>
+        <h2 id="h-t4">Is Paganin better than plain smoothing?</h2>
+        <dl class="qa">
+          <dt>Why</dt><dd>If simple smoothing does the same job, phase retrieval adds nothing for this scan.</dd>
+          <dt>What we did</dt><dd>We repeated the sweep with Gaussian smoothing of the projections (σ = 0.5 to 6 px) in place of the Paganin filter, similar to NRecon's Smoothing option, and compared the two families at equal noise.</dd>
+          <dt>What we found</dt><dd>
+            <ul>
+              <li>The curves of detail kept and of thin-wall contrast lie almost on top of each other (left and right panels below).</li>
+              <li>The shapes differ slightly: Paganin keeps a little more of the finest detail and removes a little more at 100–300 µm.</li>
+              <li>Paganin removes the dark halo more completely at the same noise (middle panel): 3.6% at δ/β = 1600 against about 6.5% for Gaussian smoothing.</li>
+            </ul>
+          </dd>
+        </dl>
+      </div>
+      <figure class="figure">
+        <a href="assets/phase-retrieval/s05_tradeoff.png" target="_blank" rel="noopener" class="paper"><img src="assets/phase-retrieval/s05_tradeoff.png" width="1950" height="556" loading="lazy" alt="Three panels plotting, against noise, the half-strength detail period, the dark halo and thin-wall contrast, for Paganin and Gaussian filters."></a>
+        <figcaption class="caption"><b>The price of lower noise: Paganin (teal) against Gaussian smoothing (orange).</b> Noise falls to the right. Point labels give δ/β or the Gaussian σ in pixels; the black square is the unfiltered reconstruction. Averages of four slices.</figcaption>
+      </figure>
+    </section>
+
+    <section class="cs-sec" aria-labelledby="h-t5">
+      <div class="cs-col">
+        <span class="eyebrow">Test 5</span>
+        <h2 id="h-t5">Measuring the fringe directly</h2>
+        <dl class="qa">
+          <dt>The idea</dt><dd>Absorption can never make a pixel brighter than the open beam beside the sample. A bright rim just outside the fly's outline in a projection is therefore phase contrast by definition. Correct phase retrieval flattens that rim to the air level and goes no further.</dd>
+          <dt>What we did</dt><dd>In 180 projections (every 10th) we found the fly's outline, kept only edges facing clean air, and averaged the transmission at each distance from the edge, before and after each filter setting. Our first attempt used the whole outline and failed: wings and hairs lie just outside most of it.</dd>
+          <dt>What we found</dt><dd>The raw projections show a rim of <strong>+0.21%</strong>. Paganin filtering cancels it at <strong>δ/β ≈ 580</strong> (30 keV), a smoothing length of 9 µm, about one pixel. At 1600 the edge is already pulled into the air (−0.5%); at 6400, to −2.1%. The single head edge in Part 2 needed about 2000: one sharp edge overstates what the sample as a whole needs.</dd>
+        </dl>
+      </div>
+      <figure class="figure">
+        <a href="assets/phase-retrieval/s06_fringes.png" target="_blank" rel="noopener" class="paper"><img src="assets/phase-retrieval/s06_fringes.png" width="1690" height="598" loading="lazy" alt="Left: average transmission profiles across clean fly edges for several filters. Right: fringe height against delta over beta, crossing zero near 577."></a>
+        <figcaption class="caption"><b>Left:</b> mean transmission across clean edges, fly to the left, air to the right; 1 is the open beam. Without filtering (black) the curve overshoots the air level just outside the edge. <b>Right:</b> height of that rim against δ/β; it crosses zero at δ/β ≈ 577.</figcaption>
+      </figure>
+    </section>
+
+    <section class="cs-sec" aria-labelledby="h-t6">
+      <div class="cs-col">
+        <span class="eyebrow">Test 6</span>
+        <h2 id="h-t6">A multivariate grid</h2>
+        <dl class="qa">
+          <dt>Why</dt><dd>To see whether any combination of settings beats the single-parameter trade-off.</dd>
+          <dt>What we did</dt><dd>60 reconstructions in all. The main grid of 48 crossed the phase filter (none, Paganin 600, 1600, 6400) with the reconstruction window (Ram-Lak, the sharpest; Shepp-Logan; Hamming, NRecon's default; Hann, the smoothest) and the number of projections (1800 as scanned; 900 and 450, which a 2× or 4× faster scan would give). Another 12 tested two Paganin variants: the generalised formula, and filtering after taking the logarithm.</dd>
+          <dt>What we found</dt><dd>
+            <ul>
+              <li><strong>One curve.</strong> All combinations fall on the same noise-versus-detail curve. Choosing settings means choosing a point on it.</li>
+              <li><strong>With phase retrieval on, a sharper window pays off.</strong> Without Paganin, Ram-Lak costs 58% more noise than Hamming; with Paganin 600 it costs only 25% more and keeps 42% of 40 µm detail instead of 29%.</li>
+              <li><strong>The Paganin variants</strong> differ from the standard method by only a few percent.</li>
+              <li><strong>Fewer projections.</strong> Halving them raised noise 2.4×, not the 1.4× expected from photon statistics, because too few angles add streaks. Phase retrieval can bring a half-time scan back below today's noise (Paganin 1600 with 900 projections: 6.8 against 9.8), but only by giving up most detail below about 100 µm. With fewer projections the even/odd split overstates streaks, so this part is qualitative.</li>
+              <li><strong>The halo depends only on the phase filter</strong>, not on the window or the number of projections, as expected for a physical effect.</li>
+            </ul>
+          </dd>
+        </dl>
+        <div class="tbl-wrap">
+          <table class="data">
+            <thead><tr><th>Setting (1800 projections)</th><th>Noise ×10⁻³ mm⁻¹</th><th>CNR</th><th>40 µm kept</th><th>Dark halo</th></tr></thead>
+            <tbody>
+              <tr><td>none, Hamming (like NRecon)</td><td class="n">9.8</td><td class="n">30</td><td class="n">100%</td><td class="n">12.5%</td></tr>
+              <tr><td>none, Ram-Lak</td><td class="n">15.6</td><td class="n">19</td><td class="n">149%</td><td class="n">12.6%</td></tr>
+              <tr class="best"><td>Paganin 600, Hamming</td><td class="n">4.0</td><td class="n">68</td><td class="n">29%</td><td class="n">8.1%</td></tr>
+              <tr class="best"><td>Paganin 600, Ram-Lak</td><td class="n">5.0</td><td class="n">55</td><td class="n">42%</td><td class="n">8.6%</td></tr>
+              <tr><td>Paganin 1600, Hamming</td><td class="n">2.4</td><td class="n">109</td><td class="n">14%</td><td class="n">3.6%</td></tr>
+              <tr><td>Paganin 1600, Ram-Lak</td><td class="n">2.8</td><td class="n">93</td><td class="n">20%</td><td class="n">3.8%</td></tr>
+              <tr><td>Paganin 6400, Hamming</td><td class="n">1.0</td><td class="n">235</td><td class="n">5%</td><td class="n">−5.5%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <figure class="figure">
+        <a href="assets/phase-retrieval/s08_grid_tradeoff.png" target="_blank" rel="noopener" class="paper"><img src="assets/phase-retrieval/s08_grid_tradeoff.png" width="1300" height="845" loading="lazy" alt="Scatter plot of 40 micrometre detail kept against noise for every combination in the grid; all points follow one curve."></a>
+        <figcaption class="caption"><b>Every combination tried.</b> Colour is the phase filter, marker shape the reconstruction window, marker size the number of projections. No point lands above the common curve.</figcaption>
+      </figure>
+    </section>
+
+    <section class="cs-sec" aria-labelledby="h-vol">
+      <div class="cs-col">
+        <span class="eyebrow">Part 4 · Full volumes</span>
+        <h2 id="h-vol">The three volumes, side by side</h2>
+        <p>We reconstructed three complete volumes covering NRecon's sections 203–884, identical except for the phase filter: none, δ/β = 600 (fringe-matched) and δ/β = 1600 (strong noise reduction). All use the Hamming window and NRecon-like ring correction, and all close-ups below share one grey scale (−0.02 to 0.45 mm⁻¹). Drag a close-up to move all three together.</p>
+      </div>
+      <div class="figure vp" id="vp">
+        <div class="vp-bar">
+          <div class="vp-group" role="group" aria-label="Region">
+            <button type="button" data-vp-sec="690" aria-pressed="true">Thorax · 690</button>
+            <button type="button" data-vp-sec="786" aria-pressed="false">Head · 786</button>
+            <button type="button" data-vp-sec="600" aria-pressed="false">Abdomen · 600</button>
+          </div>
+          <div class="vp-group" role="group" aria-label="Magnification">
+            <button type="button" data-vp-zoom="1" aria-pressed="false">1×</button>
+            <button type="button" data-vp-zoom="2" aria-pressed="true">2×</button>
+            <button type="button" data-vp-zoom="4" aria-pressed="false">4×</button>
+          </div>
+        </div>
+        <div class="vp-grid">
+          <div class="vp-cell">
+            <div class="t">Whole slice, no filter</div>
+            <div class="vp-ov">
+              <img id="vp-ov-img" src="assets/phase-retrieval/vol_690_overview.png" width="271" height="271" alt="Reduced view of the whole slice with the close-up region outlined.">
+              <div class="vp-box" id="vp-box"><div class="vp-win" id="vp-win"></div></div>
+            </div>
+            <div class="d" id="vp-ov-d">Orange square: the 320 × 320 px close-up region (2.6 mm). Inner square: the part shown at the current magnification.</div>
+          </div>
+          <div class="vp-cell">
+            <div class="t"><i style="background: var(--raw)"></i>No phase retrieval</div>
+            <div class="vp-view" role="group" tabindex="0" aria-label="Close-up without phase retrieval. Drag or use arrow keys to move."><img data-vp-key="none" src="assets/phase-retrieval/vol_690_none.png" width="320" height="320" alt="Close-up, no phase retrieval" draggable="false"></div>
+            <div class="d"><span class="mono">noise 9.8 · CNR 30 · 40 µm kept 100%</span></div>
+          </div>
+          <div class="vp-cell">
+            <div class="t"><i style="background: var(--pag)"></i>Paganin δ/β 600</div>
+            <div class="vp-view" role="group" tabindex="0" aria-label="Close-up with Paganin 600. Drag or use arrow keys to move."><img data-vp-key="p600" src="assets/phase-retrieval/vol_690_p600.png" width="320" height="320" alt="Close-up, Paganin 600" draggable="false"></div>
+            <div class="d"><span class="mono">noise 4.0 · CNR 68 · 40 µm kept 29%</span></div>
+          </div>
+          <div class="vp-cell">
+            <div class="t"><i style="background: var(--ink)"></i>Paganin δ/β 1600</div>
+            <div class="vp-view" role="group" tabindex="0" aria-label="Close-up with Paganin 1600. Drag or use arrow keys to move."><img data-vp-key="p1600" src="assets/phase-retrieval/vol_690_p1600.png" width="320" height="320" alt="Close-up, Paganin 1600" draggable="false"></div>
+            <div class="d"><span class="mono">noise 2.4 · CNR 109 · 40 µm kept 14%</span></div>
+          </div>
+        </div>
+        <p class="caption" id="vp-cap">Noise in ×10⁻³ mm⁻¹; numbers are four-slice averages from Tests 3 and 6. In the thorax, look at the flight-muscle bundles: the grain in the tissue fades from left to right, and so do the thinnest cuticle lines.</p>
+      </div>
+      <div class="cs-col">
+        <ul>
+          <li><strong>Which volume for what:</strong> δ/β 600 for general viewing (noise 2.4× lower, cuticle still fairly sharp); δ/β 1600 for segmenting soft tissue (noise 4× lower, fine detail softened); no filter for the finest cuticle and as the like-for-like reference.</li>
+          <li><strong>Format:</strong> 16-bit TIFF, one file per section, numbered and oriented like NRecon's files, cropped to the fly (1215 × 1215 px, 8.152 µm voxels, about 2 GB per volume). They open as a TIFF series in DataViewer, CTvox or CTAn. Grey value v → attenuation in mm⁻¹ = −0.10 + v / 65535 × 1.10, the same in all three volumes.</li>
+          <li><strong>Checks:</strong> slice 690 of each volume equals the validated test slice to within one grey step, and a vertical cut through all slices shows no joins between computation blocks. No beam-hardening correction was applied, so the pin streaks (visible in the abdomen view) are stronger than in NRecon's volume.</li>
+          <li><strong>Time:</strong> about 19 minutes per volume on one shared GPU.</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="cs-sec" aria-labelledby="h-pitfalls">
+      <div class="cs-col">
+        <h2 id="h-pitfalls">Pitfalls we hit along the way</h2>
+        <p>Each of these produced a plausible-looking but wrong result before it was caught. The checks are cheap and carry over to other reconstruction studies.</p>
+        <div class="tbl-wrap">
+          <table class="data text">
+            <thead><tr><th>Symptom</th><th>Cause</th><th>Check that caught it</th></tr></thead>
+            <tbody>
+              <tr><td>Doubled edges and streaks</td><td>Wrong rotation direction in the reconstruction</td><td>Side-by-side comparison with the vendor reconstruction</td></tr>
+              <tr><td>Grey values 8× off the vendor's</td><td>NRecon's exported BMP scale, not an error in ours</td><td>Conservation test: slice total equals projection-row total</td></tr>
+              <tr><td>FRC resolution identical for every filter</td><td>FRC is blind to linear filtering</td><td>Comparison with the cross-spectrum transfer function</td></tr>
+              <tr><td>No clear fringe at the outline</td><td>Wings and hairs just outside the outline</td><td>Restricting to edges facing clean air (about 343 px per projection)</td></tr>
+              <tr><td>Noise estimate of exactly zero</td><td>Median-based estimator on quantised 8-bit data</td><td>Switching to the standard deviation about a local mean</td></tr>
+              <tr><td>Noise rising too fast with fewer projections</td><td>Streaks differ between even and odd halves</td><td>Comparison with the √2 expected from photon statistics</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="cs-sec" aria-labelledby="h-steps">
+      <div class="cs-col">
+        <span class="eyebrow">Part 5 · Practice</span>
+        <h2 id="h-steps">Using phase retrieval in NRecon</h2>
         <ol class="steps">
           <li>Check that the scan folder still has the raw projection images and the matching <code>.log</code>. Phase retrieval works on projections, so reconstructed slices alone are not enough.</li>
-          <li>Open the dataset in NRecon 2.0 or newer. Bruker's distributor describes phase retrieval as new in 2.0. The fly scan above was reconstructed with NRecon 2.1.0.2 on the facility PC, so the option should be there.</li>
-          <li>Turn on phase retrieval and enter δ/β. The distances and pixel size come from the <code>.log</code> automatically. <span class="tag">Unverified</span> I could not confirm the menu name; Bruker method note MN133 has the walk-through.</li>
-          <li>Preview one slice. If bright or dark halos remain at edges, raise δ/β. If fine structures blur, lower it. Changing it in steps of 2–3× is a practical way to find the range.</li>
-          <li><span class="tag">Inference</span> Phase retrieval already smooths, so reduce NRecon's separate Smoothing setting to avoid smoothing twice.</li>
-          <li>Reconstruct the full stack and write the δ/β value in your methods section.</li>
+          <li>Open the dataset in NRecon 2.0 or newer. Bruker's distributor describes phase retrieval as new in 2.0. The fly scan was reconstructed with NRecon 2.1.0.2 on the facility PC, so the option should be there.</li>
+          <li>Turn on phase retrieval and enter δ/β. The distances and pixel size come from the <code>.log</code> automatically. <span class="tag">Unverified</span> We could not confirm the menu name; Bruker method note MN133 has the walk-through.</li>
+          <li>Choose δ/β from the fringe, not from the halo in the slices. The dark band along edges in reconstructed slices is mostly not phase contrast: it disappears only near δ/β 3200 (Test 3), about 5× past the fringe-matched value, so tuning until it vanishes over-smooths. On this scan the true fringe (0.21%) is also below the pixel noise, so there is no reliable visual endpoint. Start from the measured value instead: δ/β ≈ 580 at an assumed 30 keV.</li>
+          <li><span class="tag">Unverified</span> Carry the value over to NRecon's scale. The same filter needs δ/β × E / 30 keV in a program that assumes energy E (about 390 at 20 keV). <span class="tag">Inference</span> If NRecon does not state the energy it assumes, use a check that does not depend on the scale: measure the standard deviation in a uniform patch of air or tissue on the preview, with and without phase retrieval. The fringe-matched filter lowers it about 2.4× on this scan; our δ/β 1600 lowers it about 4× (Test 3). Step δ/β in 2× steps until the ratio matches.</li>
+          <li>Go above the matched value only for the noise level a segmentation needs (Test 3 table); beyond it the filter only smooths. On each preview, check the finest structures: if thin cuticle lines blur or edges smear into the air, lower δ/β.</li>
+          <li><span class="tag">Inference</span> Set NRecon's separate Smoothing option to 0 while phase retrieval is on. Both are low-pass filters, so using both smooths twice. We did not test how NRecon combines them.</li>
+          <li>Reconstruct the full stack and report δ/β, and the assumed energy if NRecon shows one, in the methods section.</li>
         </ol>
         <div class="note">
-          <strong>For future scans</strong>
-          <span><span class="tag">Inference</span> On this scanner, a smaller pixel size (higher magnification) makes phase fringes stronger relative to pixel size, so phase retrieval gains the most on high-resolution scans of low-density samples.</span>
+          <strong>For this fly dataset</strong>
+          <span>Values on our 30 keV scale; multiply by E / 30 keV for a program that assumes energy E.</span>
+          <ul>
+            <li><strong>Segmenting soft tissue</strong> (flight muscle, gut, fat body): δ/β ≈ 1600. CNR rises from 30 to about 110.</li>
+            <li><strong>Fine cuticle structure</strong> (setae, thin sclerites, wing veins): no phase retrieval, or a weak one (≈ 600) with a sharper reconstruction window.</li>
+            <li><strong>Both:</strong> reconstruct twice, segment tissue on the phase-retrieved volume and measure cuticle on the standard one. Both come from the same projections, so they are aligned slice for slice.</li>
+          </ul>
         </div>
-      </section>
+        <div class="note">
+          <strong>For future scans where phase contrast matters</strong>
+          <ul>
+            <li><span class="tag">Inference</span> Lower the Fresnel number: no camera binning when the field of view allows, and a lower tube voltage (about 40–60 kV), which also raises absorption contrast in insect tissue. Phase retrieval gains most on high-resolution scans of low-density samples.</li>
+            <li>Keep the full number of projections. Phase retrieval does not make up for streaks from too few angles (Test 6).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
 
-      <section aria-labelledby="h-math">
+    <section class="cs-sec" aria-labelledby="h-math">
+      <div class="cs-col">
+        <span class="eyebrow">Part 6 · Reference</span>
         <h2 id="h-math">The math, in plain words</h2>
         <div class="math">
           <div class="eq">
@@ -434,42 +834,45 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
           <div class="eq">
             <div class="formula">z_eff = OS × (CS − OS) / CS</div>
             <div class="where">In the code: geometry()</div>
-            <p><b>Effective propagation distance.</b> (CS − OS) is the gap between sample and camera, where fringes grow. Because the beam is a cone, the image is also magnified on the way, so the gap is scaled down to what it would be at the sample's own size. Longer z_eff means stronger fringes.</p>
+            <p><b>Effective propagation distance.</b> (CS − OS) is the gap between sample and camera, where fringes grow. Because the beam is a cone, the image is also magnified on the way, so the gap is scaled down to what it would be at the sample's own size. A longer z_eff means stronger fringes.</p>
           </div>
           <div class="eq">
             <div class="formula">I_camera = I_absorption + z_eff × (how sharply the sample's "phase thickness" curves)</div>
             <div class="where">In the code: the "camera" loop inside render(); physics name: transport-of-intensity equation</div>
-            <p><b>Where fringes come from.</b> δ measures how much a material bends X-rays. Adding up δ along each ray gives a "phase thickness". Where that thickness changes direction sharply (at an edge), X-rays pile up on one side (bright line) and leave the other (dark line). The code measures this curvature by comparing each camera pixel with its two neighbours.</p>
+            <p><b>Where fringes come from.</b> δ measures how much a material bends X-rays. Adding up δ along each ray gives a "phase thickness". Where that thickness changes direction sharply, at an edge, X-rays pile up on one side (bright line) and leave the other (dark line). The code measures this curvature by comparing each camera pixel with its two neighbours.</p>
           </div>
           <div class="eq">
-            <div class="formula">β = μ × λ / (4π) &nbsp;&nbsp;&nbsp; so &nbsp;&nbsp; δ/β = δ × 4π / (μ × λ)</div>
+            <div class="formula">β = μ × λ / (4π) &nbsp;&nbsp; so &nbsp;&nbsp; δ/β = δ × 4π / (μ × λ)</div>
             <div class="where">In the code: TISSUE_DB constant</div>
-            <p><b>The δ/β ratio.</b> β is the absorption of the material written in the same units as δ. μ is the usual attenuation coefficient and λ is the X-ray wavelength (0.062 nm at the 20 keV used here). δ/β is "how much it bends" divided by "how much it absorbs". For soft tissue it is in the thousands, so tissue bends X-rays far more than it absorbs them.</p>
+            <p><b>The δ/β ratio.</b> β is the absorption of the material written in the same units as δ. μ is the usual attenuation coefficient and λ the X-ray wavelength (0.062 nm at the 20 keV used in the simulator). δ/β is "how much it bends" divided by "how much it absorbs". For soft tissue it is in the thousands.</p>
           </div>
           <div class="eq">
             <div class="formula">filtered = original ÷ (1 + c × (2π / period)²), &nbsp; c = z_eff × (δ/β) × λ / (4π)</div>
-            <div class="where">In the code: the HP filter array in render(), applied with applyFilter()</div>
-            <p><b>The Paganin filter.</b> Each projection is split into patterns of different sizes ("periods"). Large patterns are divided by almost exactly 1 and stay the same. Small patterns are divided by a large number and shrink. Edge fringes are the smallest patterns, so they are removed. Random pixel noise is also fine-scale, so it drops too.</p>
+            <div class="where">In the code: the HP filter array in render(), applied with applyFilter(); flyFilter() in two dimensions</div>
+            <p><b>The Paganin filter</b> (Paganin et al., 2002). Each projection is split into patterns of different sizes ("periods"). Large patterns are divided by almost exactly 1 and stay the same. Small patterns are divided by a large number and shrink. Edge fringes are the smallest patterns, so they are removed. Random pixel noise is also fine-scale, so it drops too.</p>
           </div>
           <div class="eq">
             <div class="formula">L = √c</div>
             <div class="where">In the code: geometry(), shown as "Smoothing length"</div>
-            <p><b>Smoothing length.</b> The size, in µm, below which the filter starts removing detail. Compare it with your pixel size: an L of several pixels means a strong filter.</p>
+            <p><b>Smoothing length</b> (also called the Paganin length). The size, in µm, below which the filter starts removing detail. Compared with the pixel size, an L of several pixels means a strong filter. For the fly scan, the fringe-matched δ/β ≈ 580 gives L ≈ 9 µm, about one pixel.</p>
           </div>
           <div class="eq">
             <div class="formula">N_F = p² / (λ × z_eff)</div>
             <div class="where">In the code: geometry(), shown as "Fresnel number"</div>
-            <p><b>Fresnel number.</b> p is the pixel size. Values above about 1 mean the fringes are thin compared with a pixel. That is the regime the Paganin method and this simulation assume.</p>
+            <p><b>Fresnel number.</b> p is the pixel size. Values above about 1 mean the fringes are thin compared with a pixel, the regime the Paganin method and this simulation assume. Larger values mean weaker visible fringes: the fly scan has N_F ≈ 37.</p>
           </div>
           <div class="eq">
             <div class="formula">projection = −ln(I) &nbsp;→&nbsp; sharpen (ramp filter) &nbsp;→&nbsp; smear back across the image at every angle</div>
             <div class="where">In the code: rampH, applyFilter(), backproject()</div>
-            <p><b>Reconstruction.</b> Taking −ln turns transmitted intensity into "total attenuation along the ray". Each projection is then sharpened and spread back over the image along its viewing angle. Adding all 180 angles rebuilds the slice. NRecon does the same in principle, with a cone-beam version of the algorithm.</p>
+            <p><b>Reconstruction.</b> Taking −ln turns transmitted intensity into total attenuation along the ray. Each projection is then sharpened and spread back over the image along its viewing angle. The simulator adds 180 angles; NRecon and our case-study reconstruction do the same with the cone-beam version of the algorithm (FDK).</p>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section aria-labelledby="h-verify">
+    <section class="cs-sec" aria-labelledby="h-verify">
+      <div class="cs-col">
+        <span class="eyebrow">Part 7 · Limits and sources</span>
         <h2 id="h-verify">What is verified and what is not</h2>
         <div class="note">
           <strong>From Bruker's distributor (Blue Scientific), via search results</strong>
@@ -481,24 +884,63 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
           </ul>
         </div>
         <div class="note">
-          <strong>Fly example</strong>
+          <strong>Measured on the fly scan</strong>
           <ul>
-            <li>Real data: projection 531 of a fly scan on the facility's SkyScan 1272, with scan values taken from its <code>.log</code>.</li>
-            <li>The filter shown is this page's implementation of the Paganin formula, not NRecon's. NRecon's output may differ in detail.</li>
+            <li>Part 2 uses projection 531 with this page's own Paganin filter, not NRecon's.</li>
+            <li>Parts 3 and 4 use our own GPU reconstruction of all 1800 projections. It reproduces NRecon's geometry exactly and its noise level away from the pin, but has no beam-hardening correction, and its absolute grey values are on a different scale.</li>
+            <li>"Detail kept" is measured against the unfiltered reconstruction, not against the true fly. Four slices were measured in detail, with consistent results.</li>
           </ul>
         </div>
         <div class="note">
           <strong>Not verified</strong>
           <ul>
-            <li>The exact NRecon menu names, and whether NRecon's δ/β field equals the physical ratio or is a scaled version.</li>
-            <li>The <code>.log</code> field names on your system. The parser looks for the names shown under each slider.</li>
-            <li>The default distances (55 mm and 275 mm) are example values, not 1272 specifications.</li>
-            <li>Material values are approximate textbook values at a single energy of 20 keV. Your scanner produces a spread of energies, so the best δ/β on real data is found by eye.</li>
-            <li>The simulation is simplified: parallel beam instead of cone beam, one energy, one detector-blur value, 180 projections.</li>
+            <li>NRecon's own phase-retrieval output: we did not run it, so the factor between its δ/β scale and ours is unknown, as are the exact menu names.</li>
+            <li>The <code>.log</code> field names on other systems. The parser looks for the names shown under each slider.</li>
+            <li>The simulator's default distances (55 mm and 275 mm) are example values, not 1272 specifications. Its material values are approximate textbook values at a single energy of 20 keV, and it is simplified: parallel beam instead of cone beam, one energy, one detector-blur value, 180 projections.</li>
+            <li>One scan of one sample. A sample or setup with stronger phase contrast could benefit far more.</li>
           </ul>
         </div>
-      </section>
-    </main>
+      </div>
+    </section>
+
+    <section class="cs-sec" aria-labelledby="h-questions">
+      <div class="cs-col">
+        <h2 id="h-questions">Questions for discussion</h2>
+        <div class="qs">
+          <details>
+            <summary>1. Why does the standard deviation of (even − odd) / 2 estimate the noise of the full reconstruction?</summary>
+            <p>Each half uses half the photons, so its noise variance is 2σ², where σ² is the variance of the full reconstruction. The halves are independent, so even − odd has variance 4σ², and dividing by 2 gives σ². The fly itself is identical in both halves and cancels.</p>
+          </details>
+          <details>
+            <summary>2. Two linear filters with the same output noise are applied to the same data. Why must they keep similar detail?</summary>
+            <p>Output noise is set by how much each filter passes at every frequency, weighted by the noise spectrum. Matching the noise therefore largely fixes how much the filter passes overall, and with it how much signal survives. Only the distribution across frequencies can differ, which here was a small effect. Physics enters only through what one filter removes that the other does not; here, the fringe.</p>
+          </details>
+          <details>
+            <summary>3. The pixel size is halved to 4 µm, with everything else unchanged. What happens to the Fresnel number, the fringe and the matched δ/β?</summary>
+            <p>N<sub>F</sub> scales with p², so it falls about fourfold to roughly 9 and the fringe becomes more visible. The matched δ/β is a property of the material and the spectrum, so it should stay near the same value. The smoothing length stays about 9 µm, which is now about two pixels rather than one, so the filter removes relatively more of what the finer pixels can resolve.</p>
+          </details>
+          <details>
+            <summary>4. The fringe is cancelled at δ/β ≈ 580, but the dark halo in the slices disappears only near 3200. What does that suggest?</summary>
+            <p>Most of the halo in the reconstructed slices is not phase contrast. Plausible contributors are the edge response of the ramp filter, partial-volume effects and beam hardening. Beyond δ/β ≈ 580 the filter reduces the halo by blurring it, as Gaussian smoothing also does.</p>
+          </details>
+          <details>
+            <summary>5. The single head edge in Part 2 needed δ/β ≈ 2000, but the average edge needed 580. Which is right?</summary>
+            <p>Paganin's method assumes one material, so one δ/β cannot match every edge. The sharp head edge has the strongest fringe in the scan; the average over many clean edges represents the sample as a whole. Tuning on the most striking edge over-smooths everything else, which is why we measure the fringe over many edges rather than judging it by eye on one.</p>
+          </details>
+          <details>
+            <summary>6. Halving the number of projections raised noise 2.4× instead of 1.4×. Where does the extra come from?</summary>
+            <p>Angular undersampling. With fewer views, structures produce streaks that do not average out. Our noise measure counts the streaks that differ between the even and odd halves, which inflates the number further. Phase retrieval lowers random noise but does not restore missing angles.</p>
+          </details>
+        </div>
+        <h3>Further reading</h3>
+        <ol class="refs">
+          <li>Paganin D., Mayo S. C., Gureyev T. E., Miller P. R., Wilkins S. W. (2002). Simultaneous phase and amplitude extraction from a single defocused image of a homogeneous object. <em>Journal of Microscopy</em> 206, 33–40.</li>
+          <li>Kitchen M. J. et al. (2017). CT dose reduction factors in the thousands using X-ray phase contrast. <em>Scientific Reports</em> 7, 15953.</li>
+          <li>Feldkamp L. A., Davis L. C., Kress J. W. (1984). Practical cone-beam algorithm. <em>Journal of the Optical Society of America A</em> 1, 612–619.</li>
+        </ol>
+        <p class="caption">The case-study code, logs, tables, test slices and volumes are kept with the scan data in the folder <code>MarmeladaC_NF_2K_8.15um_100kV_41uA_PhaseRetrieval_Tests</code>, with a step-by-step session log.</p>
+      </div>
+    </section>
   </div>
 </div>
 
@@ -1001,7 +1443,7 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
   for (const id of ["os", "cs", "px", "db", "noise"]) $(id).addEventListener("input", schedule);
   // Redraw on theme change so the canvas profile line picks up the new color
   try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", schedule); } catch (e) {}
-  document.querySelectorAll("[data-db]").forEach(b => b.addEventListener("click", () => {
+  document.querySelectorAll("button[data-db]").forEach(b => b.addEventListener("click", () => {
     const v = b.dataset.db === "tissue" ? TISSUE_DB : +b.dataset.db;
     $("db").value = sliderFromDb(v); schedule();
   }));
@@ -1065,6 +1507,8 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
   FLY.zEff = (FLY.os / 1000) * ((FLY.cs - FLY.os) / 1000) / (FLY.cs / 1000);
   FLY.lambda = 1.23984e-6 / (FLY.keV * 1000);
   FLY.p = FLY.px * 1e-6;
+  // Paganin c = z_eff · δ/β · λ / 4π (m²) for the fly scan geometry; λ in m
+  const paganinC = (db, lambda) => FLY.zEff * db * lambda / (4 * Math.PI);
 
   // Decode 16-bit little-endian pixels and convert to transmission (pixel / Reference Intensity)
   let flyT, flyF, FLY_K2, FLY_WIN, flyRawProfile, flyRawNoise, flyRawRim, flyRe, flyIm, flyOut;
@@ -1114,7 +1558,7 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
   function flyFilter(db) {
     const P = FLY.P, n = P * P;
     if (db <= 0) return flyT;
-    const c = FLY.zEff * db * FLY.lambda / (4 * Math.PI);
+    const c = paganinC(db, FLY.lambda);
     const cpix = c / (FLY.p * FLY.p);
     const re = flyRe, im = flyIm, out = flyOut; // reused buffers
     for (let i = 0; i < n; i++) { const h = 1 / (1 + cpix * FLY_K2[i]); re[i] = flyF.re[i] * h; im[i] = flyF.im[i] * h; }
@@ -1167,13 +1611,13 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
   const FLY_DB_MIN = 50, FLY_DB_MAX = 20000;
   const flyDbFromSlider = v => (v <= 0 ? 0 : FLY_DB_MIN * Math.pow(FLY_DB_MAX / FLY_DB_MIN, v / 1000));
   const flySliderFromDb = db => (db <= 0 ? 0 : Math.round(1000 * Math.log(db / FLY_DB_MIN) / Math.log(FLY_DB_MAX / FLY_DB_MIN)));
-  $("fly-db").value = flySliderFromDb(2000);
-  let flyDbExact = 2000; // preset value, kept exact until the slider is moved
+  $("fly-db").value = flySliderFromDb(600);
+  let flyDbExact = 600; // preset value, kept exact until the slider is moved
 
   function renderFly() {
     const db = flyDbExact !== null ? flyDbExact : flyDbFromSlider(+$("fly-db").value);
     const out = flyFilter(db);
-    const c = FLY.zEff * db * FLY.lambda / (4 * Math.PI), L = Math.sqrt(c);
+    const c = paganinC(db, FLY.lambda), L = Math.sqrt(c);
     $("fly-db-v").textContent = db > 0 ? fmt(db, 0) : "off";
     $("fly-L").textContent = db > 0 ? `${fmt(L * 1e6, 1)} µm (${fmt(L / FLY.p, 1)} px)` : "–";
     $("fly-noise").textContent = `${fmt(flyNoise(out), 2)}% (raw ${fmt(flyRawNoise, 2)}%)`;
@@ -1203,8 +1647,8 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
     flyRe = new Float64Array(n); flyIm = new Float64Array(n); flyOut = new Float64Array(FLY.S * FLY.S);
     flyRawProfile = flyProfile(flyT); flyRawNoise = flyNoise(flyT); flyRawRim = flyRim(flyRawProfile);
     // Fill the results table from the same filter the slider uses
-    for (const tr of document.querySelectorAll("#fly-table tr[data-db]")) {
-      const db = +tr.dataset.db, out = flyFilter(db), L = Math.sqrt(FLY.zEff * db * FLY.lambda / (4 * Math.PI));
+    for (const tr of document.querySelectorAll("#fly-table tr[data-result-db]")) {
+      const db = +tr.dataset.resultDb, out = flyFilter(db), L = Math.sqrt(paganinC(db, FLY.lambda));
       tr.querySelector(".L").textContent = db > 0 ? `${fmt(L * 1e6, 1)} µm (${fmt(L / FLY.p, 1)} px)` : "–";
       tr.querySelector(".rim").textContent = pct(flyRim(flyProfile(out)));
       tr.querySelector(".noise").textContent = fmt(flyNoise(out), 2) + "%";
@@ -1232,7 +1676,162 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
   } else startFly();
 
   render();
+
+  // Parts 3-4: theory-against-measurement explorer and the synced three-volume close-up panel.
+  // Runs after the simulator has rendered, and an error here is contained so it cannot blank Parts 1-2.
+  try {
+    // ---------- explorer: Paganin transfer 1 / (1 + c k²) for the fly scan geometry ----------
+    const MATCH30 = 580;
+    // Test 3 measurements (four-slice averages): δ/β at 30 keV → fraction kept at 40 µm and 80 µm period
+    const MEAS = { 50: [.8295, .9452], 100: [.7082, .8967], 200: [.5471, .8139], 400: [.375, .6874], 800: [.2313, .5246],
+      1600: [.1352, .3565], 3200: [.0786, .2184], 6400: [.0466, .1257], 12800: [.0293, .0710], 25600: [.0193, .0399] };
+    const NEAR = 1.2;                                            // show a measurement within a factor of 1.2
+    const cx = $("cx-plot");
+    const PW = 640, PH = 300, ML = 46, MR = 14, MT = 14, MB = 40;
+    const X0 = 1, X1 = 3;                                        // log10 of 10 µm and 1000 µm
+    const sx = d => ML + (Math.log10(d) - X0) / (X1 - X0) * (PW - ML - MR);
+    const sy = v => MT + (1 - v) * (PH - MT - MB);
+    const cOf = (db, E) => paganinC(db, 1.23984e-6 / (E * 1000)) * 1e12;   // µm², assumed energy E in keV
+    const kept = (c, d) => 1 / (1 + c * Math.pow(2 * Math.PI / d, 2));
+    const el = (tag, attrs, text) => {
+      const e = document.createElementNS(NS, tag);
+      for (const k in attrs) e.setAttribute(k, attrs[k]);
+      if (text !== undefined) e.textContent = text;
+      cx.appendChild(e); return e;
+    };
+    const curve = c => {
+      let p = "";
+      for (let i = 0; i <= 160; i++) { const d = Math.pow(10, X0 + (X1 - X0) * i / 160); p += (i ? "L" : "M") + sx(d).toFixed(1) + " " + sy(kept(c, d)).toFixed(1); }
+      return p;
+    };
+    el("rect", { class: "cx-band", x: ML, y: MT, width: sx(2 * FLY.px) - ML, height: PH - MT - MB });
+    el("text", { x: ML + 4, y: MT + 12 }, "finer than");
+    el("text", { x: ML + 4, y: MT + 25 }, "2 pixels");
+    for (const v of [0, 0.25, 0.5, 0.75, 1]) {
+      el("line", { class: "grid", x1: ML, x2: PW - MR, y1: sy(v), y2: sy(v) });
+      el("text", { x: ML - 6, y: sy(v) + 4, "text-anchor": "end" }, String(v));
+    }
+    for (const d of [10, 20, 40, 80, 160, 320, 640]) {
+      el("line", { class: "grid", x1: sx(d), x2: sx(d), y1: MT, y2: PH - MB });
+      el("text", { x: sx(d), y: PH - MB + 16, "text-anchor": "middle" }, String(d));
+    }
+    el("line", { class: "ax", x1: ML, x2: PW - MR, y1: PH - MB, y2: PH - MB });
+    el("line", { class: "ax", x1: ML, x2: ML, y1: MT, y2: PH - MB });
+    el("text", { x: (ML + PW - MR) / 2, y: PH - 6, "text-anchor": "middle" }, "period of the detail (µm, log scale)");
+    el("text", { x: 12, y: (MT + PH - MB) / 2, "text-anchor": "middle", transform: `rotate(-90 12 ${(MT + PH - MB) / 2})` }, "fraction kept");
+    el("path", { class: "s-truth", d: curve(cOf(MATCH30, 30)) });
+    const live = el("path", { class: "s-pag", d: "" });
+    const dots = [0, 1].map(() => el("circle", { class: "cx-dot", r: 5 }));
+
+    const dbFrom = v => 50 * Math.pow(25600 / 50, v / 1000);
+    const share = v => `${fmt(v * 100, v < 0.1 ? 1 : 0)}%`;     // fraction kept → "15%"
+    const dbText = v => fmt(v >= 1000 ? Math.round(v / 10) * 10 : Math.round(v), 0);   // slider steps are not round numbers
+    function updateExplorer() {
+      const db = dbFrom(+$("cx-db").value), E = +$("cx-en").value, c = cOf(db, E), db30 = db * 30 / E, Lc = Math.sqrt(c);
+      $("cx-db-v").textContent = dbText(db);
+      $("cx-en-v").textContent = E + " keV";
+      live.setAttribute("d", curve(c));
+      $("cx-r30").textContent = dbText(db30);
+      $("cx-L").textContent = `${fmt(Lc, 1)} µm · ${fmt(Lc / FLY.px, 2)} px`;
+      $("cx-20").textContent = share(kept(c, 20)); $("cx-40").textContent = share(kept(c, 40)); $("cx-80").textContent = share(kept(c, 80));
+      let best = null;
+      for (const k of Object.keys(MEAS).map(Number)) {
+        const r = Math.abs(Math.log(db30 / k));
+        if (r <= Math.log(NEAR) && (best === null || r < Math.abs(Math.log(db30 / best)))) best = k;
+      }
+      dots.forEach((dot, i) => {
+        if (best === null) { dot.setAttribute("visibility", "hidden"); return; }
+        dot.setAttribute("visibility", "visible");
+        dot.setAttribute("cx", sx([40, 80][i])); dot.setAttribute("cy", sy(MEAS[best][i]));
+      });
+      $("cx-m").textContent = best === null ? "none nearby" : `${fmt(best, 0)} (30 keV)`;
+      return `δ/β ${dbText(db)} at ${E} keV: smoothing length ${fmt(Lc, 1)} µm, ${share(kept(c, 40))} kept at 40 µm.`;
+    }
+    for (const id of ["cx-db", "cx-en"]) {
+      $(id).addEventListener("input", updateExplorer);
+      // one short spoken summary when a change is committed, not on every intermediate step
+      $(id).addEventListener("change", () => { $("cx-live").textContent = updateExplorer(); });
+    }
+    updateExplorer();
+
+    // ---------- volume panel: one region, three volumes, shared zoom and pan ----------
+    // close-up box as fractions of the overview image: [top, left, size] (from s13_volume_panel.py)
+    const BOX = { 690: [0.4428, 0.2460, 0.3936], 786: [0.4797, 0.1599, 0.3936], 600: [0.4182, 0.2460, 0.3936] };
+    const CAP = {
+      690: "In the thorax, look at the flight-muscle bundles: the grain in the tissue fades from left to right, and so do the thinnest cuticle lines.",
+      786: "In the head, compare the thin cuticle walls on the left with the smooth tissue inside the capsule: the walls soften as the noise drops.",
+      600: "In the abdomen the steel pin (bright, top left) throws streaks. Phase retrieval smooths them but cannot remove them, because Paganin assumes one material.",
+    };
+    const vp = { sec: 690, zoom: 2, u: 0.5, v: 0.45 };
+    const views = [...document.querySelectorAll("#vp .vp-view")];
+    const clampC = x => { const h = 1 / (2 * vp.zoom); return Math.min(1 - h, Math.max(h, x)); };
+    function placeViews() {
+      vp.u = clampC(vp.u); vp.v = clampC(vp.v);
+      for (const view of views) {
+        const img = view.querySelector("img");
+        img.style.width = `${vp.zoom * 100}%`;
+        img.style.left = `${50 - vp.u * vp.zoom * 100}%`;
+        img.style.top = `${50 - vp.v * vp.zoom * 100}%`;
+      }
+      const [t, l, s] = BOX[vp.sec], box = $("vp-box"), win = $("vp-win");
+      box.style.top = `${t * 100}%`; box.style.left = `${l * 100}%`; box.style.width = box.style.height = `${s * 100}%`;
+      win.style.width = win.style.height = `${100 / vp.zoom}%`;
+      win.style.left = `${(vp.u - 0.5 / vp.zoom) * 100}%`; win.style.top = `${(vp.v - 0.5 / vp.zoom) * 100}%`;
+      win.hidden = vp.zoom === 1;
+    }
+    const press = (sel, val, key) => document.querySelectorAll(sel).forEach(b => b.setAttribute("aria-pressed", String(+b.dataset[key] === val)));
+    let pending = 0;
+    function setSection(sec) {
+      const ticket = ++pending;
+      const imgs = [$("vp-ov-img"), ...views.map(v => v.querySelector("img"))];
+      const srcs = imgs.map(img => `assets/phase-retrieval/vol_${sec}_${img.dataset.vpKey || "overview"}.png`);
+      $("vp").setAttribute("aria-busy", "true");
+      // load all four first and swap together, so the panel never mixes two regions
+      const load = src => new Promise((ok, fail) => { const im = new Image(); im.onload = ok; im.onerror = fail; im.src = src; });
+      Promise.all(srcs.map(load)).then(() => {
+        if (ticket !== pending) return;                       // a newer click won
+        imgs.forEach((img, i) => { img.src = srcs[i]; });
+        vp.sec = sec;
+        $("vp-cap").textContent = "Noise in ×10⁻³ mm⁻¹; numbers are four-slice averages from Tests 3 and 6. " + CAP[sec];
+        placeViews();
+      }).catch(() => {
+        if (ticket === pending) $("vp-cap").textContent = "Those images could not be loaded. The region shown has not changed.";
+      }).finally(() => {
+        if (ticket !== pending) return;
+        press("[data-vp-sec]", vp.sec, "vpSec");              // buttons always match the region on screen
+        $("vp").removeAttribute("aria-busy");
+      });
+    }
+    document.querySelectorAll("[data-vp-sec]").forEach(b => b.addEventListener("click", () => setSection(+b.dataset.vpSec)));
+    document.querySelectorAll("[data-vp-zoom]").forEach(b => b.addEventListener("click", () => {
+      vp.zoom = +b.dataset.vpZoom; press("[data-vp-zoom]", vp.zoom, "vpZoom"); placeViews();
+    }));
+    for (const view of views) {
+      let drag = null;                                         // { id, x, y } of the one pointer panning this view
+      view.addEventListener("pointerdown", e => {
+        if (drag || !e.isPrimary || e.button !== 0) return;
+        drag = { id: e.pointerId, x: e.clientX, y: e.clientY }; view.setPointerCapture(e.pointerId);
+      });
+      view.addEventListener("pointermove", e => {
+        if (!drag || e.pointerId !== drag.id) return;
+        const size = view.clientWidth * vp.zoom;
+        vp.u -= (e.clientX - drag.x) / size; vp.v -= (e.clientY - drag.y) / size;
+        drag.x = e.clientX; drag.y = e.clientY; placeViews();
+      });
+      const end = e => { if (drag && e.pointerId === drag.id) drag = null; };
+      view.addEventListener("pointerup", end); view.addEventListener("pointercancel", end);
+      view.addEventListener("keydown", e => {
+        const step = 0.1 / vp.zoom, d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+        if (!d) return;
+        e.preventDefault(); vp.u += d[0]; vp.v += d[1]; placeViews();
+      });
+    }
+    placeViews();
+  } catch (err) {
+    console.error("Case-study figures could not start:", err);
+  }
 })();
 </script>
+
 </body>
 </html>
