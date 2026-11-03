@@ -1856,20 +1856,36 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
   const toc = document.getElementById("toc");
   const links = [...toc.querySelectorAll('a[href^="#h-"]')];
   const targets = links.map(a => document.getElementById(a.getAttribute("href").slice(1)));
-  let queued = false;
+  const root = document.documentElement;
+  let queued = false, shown = -2;
   function mark() {
     queued = false;
+    const barBottom = toc.getBoundingClientRect().bottom;
     // a part counts as current once its heading is in the top quarter of the view
-    const line = toc.getBoundingClientRect().bottom + Math.min(160, innerHeight * 0.25);
+    const line = barBottom + Math.min(160, innerHeight * 0.25);
     let cur = -1;
     targets.forEach((t, i) => { if (t && t.getBoundingClientRect().top <= line) cur = i; });
+    // at the end of the page the last parts can never scroll that high: take the last heading on screen
+    if (scrollY + innerHeight >= root.scrollHeight - 4) {
+      targets.forEach((t, i) => { if (t && t.getBoundingClientRect().top < innerHeight - 40) cur = i; });
+    }
+    if (cur === shown) return;                 // only touch the bar when the current part changes
+    shown = cur;
     links.forEach((a, i) => { if (i === cur) a.setAttribute("aria-current", "location"); else a.removeAttribute("aria-current"); });
     const a = links[cur];
     if (a && (a.offsetLeft < toc.scrollLeft || a.offsetLeft + a.offsetWidth > toc.scrollLeft + toc.clientWidth)) toc.scrollLeft = a.offsetLeft - 40;
   }
-  addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(mark); } }, { passive: true });
-  addEventListener("resize", mark);
-  mark();
+  const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(mark); } };
+  // the sidebar offset and heading scroll margins follow the bar's real height (it grows with the font size)
+  const setHeight = () => root.style.setProperty("--toc-h", toc.offsetHeight + "px");
+  setHeight();
+  if ("ResizeObserver" in window) new ResizeObserver(() => { setHeight(); schedule(); }).observe(toc);
+  addEventListener("scroll", schedule, { passive: true });
+  addEventListener("resize", schedule);
+  addEventListener("hashchange", schedule);
+  addEventListener("load", schedule);          // images and fonts can move the headings after the first pass
+  if (document.fonts) document.fonts.ready.then(schedule);
+  schedule();
 })();
 </script>
 </body>
