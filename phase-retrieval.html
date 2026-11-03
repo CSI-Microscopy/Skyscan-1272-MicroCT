@@ -58,7 +58,7 @@ p { margin: 0; max-width: 68ch; }
 .back { color: var(--pag); text-decoration: none; }
 .back:hover { text-decoration: underline; }
 .eyebrow { font: 500 0.72rem/1 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
-header { display: grid; gap: 10px; margin-bottom: 28px; }
+header { display: grid; gap: 10px; margin-bottom: 18px; }
 header p { color: var(--muted); }
 .tag { font: 500 0.72rem/1 var(--f-mono); padding: 3px 6px; border-radius: 3px; background: var(--note-bg); color: var(--muted); white-space: nowrap; }
 
@@ -66,8 +66,8 @@ header p { color: var(--muted); }
 @media (max-width: 880px) { .layout { grid-template-columns: minmax(0, 1fr); } .controls { position: static !important; max-height: none !important; } }
 
 .controls {
-  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px);
-  max-height: calc(100vh - 24px); overflow: auto;
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + var(--toc-h) + 12px);
+  max-height: calc(100vh - var(--toc-h) - 24px); overflow: auto;
   background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
   padding: 18px; display: flex; flex-direction: column; gap: 18px;
 }
@@ -176,10 +176,24 @@ code { font-family: var(--f-mono); font-size: 0.85em; background: var(--note-bg)
 :root { --paper: #FFFFFF; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --paper: #E9EDF1; } }
 :root[data-theme="dark"] { --paper: #E9EDF1; }
-.toc { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 4px; }
-.toc a { display: inline-flex; align-items: baseline; gap: 6px; font-size: 0.82rem; color: var(--ink); text-decoration: none; border: 1px solid var(--line); border-radius: 4px; padding: 5px 9px; background: var(--surface); }
+/* Contents bar: sticks under the top edge, marks the part being read, scrolls sideways when narrow */
+:root { --toc-h: 52px; }
+.toc {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  display: flex; gap: 6px; align-items: center; overflow-x: auto; scrollbar-width: none;
+  margin: 0 0 28px; padding-block: 9px; min-height: var(--toc-h);
+  background: var(--bg); border-bottom: 1px solid var(--line);
+}
+.toc::-webkit-scrollbar { display: none; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 21; background: var(--bg); }
+.toc a { flex: none; display: inline-flex; align-items: baseline; gap: 6px; font-size: 0.82rem; color: var(--ink); text-decoration: none; border: 1px solid var(--line); border-radius: 4px; padding: 6px 10px; background: var(--surface); white-space: nowrap; }
 .toc a:hover { border-color: var(--muted); }
 .toc a span { font: 500 0.72rem/1 var(--f-mono); color: var(--pag); }
+.toc a[aria-current] { background: var(--pag); border-color: var(--pag); color: var(--surface); }
+.toc a[aria-current] span { color: inherit; }
+.toc .toc-top { font-family: var(--f-mono); color: var(--muted); padding-inline: 9px; }
+[id^="h-"], #top { scroll-margin-top: calc(env(safe-area-inset-top, 0px) + var(--toc-h) + 16px); }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 .toc a:focus-visible, .figure a:focus-visible { outline: 2px solid var(--pag); outline-offset: 2px; }
 section > .eyebrow, .cs-col > .eyebrow { color: var(--pag); }
 .cs { display: grid; gap: 52px; margin-top: 56px; padding-top: 40px; border-top: 1px solid var(--line); }
@@ -242,22 +256,25 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 </head>
 <body>
 
-<div class="wrap">
+<div class="wrap" id="top">
   <header>
     <a class="eyebrow back" href="./">&larr; SkyScan 1272 guide</a>
     <span class="eyebrow">Bruker SkyScan 1272 · NRecon · Paganin method</span>
     <h1>Phase retrieval on the SkyScan 1272</h1>
     <p>Teaching material for graduate students. We explain Paganin phase retrieval with a simulator, apply it to a real projection of a fly, and then test it on full GPU reconstructions of the same scan, including the control that matters: plain smoothing.</p>
-    <nav class="toc" aria-label="Contents">
-      <a href="#h-geo"><span>1</span>Simulator</a>
-      <a href="#h-fly"><span>2</span>One real projection</a>
-      <a href="#h-case"><span>3</span>Case study: full reconstructions</a>
-      <a href="#h-vol"><span>4</span>The three volumes</a>
-      <a href="#h-steps"><span>5</span>Using it in NRecon</a>
-      <a href="#h-math"><span>6</span>The math</a>
-      <a href="#h-verify"><span>7</span>Limits and sources</a>
-    </nav>
   </header>
+
+  <nav class="toc" id="toc" aria-label="Contents">
+    <a href="#top" class="toc-top" aria-label="Back to top">↑</a>
+    <a href="#h-geo"><span>1</span>Simulator</a>
+    <a href="#h-fly"><span>2</span>Real projection</a>
+    <a href="#h-case"><span>3</span>Case study</a>
+    <a href="#h-vol"><span>4</span>Volumes</a>
+    <a href="#h-steps"><span>5</span>In NRecon</a>
+    <a href="#h-math"><span>6</span>Math</a>
+    <a href="#h-verify"><span>7</span>Limits</a>
+    <a href="#h-questions"><span>?</span>Questions</a>
+  </nav>
 
   <div class="layout">
     <aside class="controls" aria-label="Scan and reconstruction settings">
@@ -1833,5 +1850,45 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 })();
 </script>
 
+<script>
+// Contents bar: mark the part currently being read, and keep its link in view when the bar scrolls sideways
+(() => {
+  const toc = document.getElementById("toc");
+  const links = [...toc.querySelectorAll('a[href^="#h-"]')];
+  const targets = links.map(a => document.getElementById(a.getAttribute("href").slice(1)));
+  const root = document.documentElement;
+  let queued = false, shown = -2, refit = false;   // refit: the bar changed size, re-check the link is in view
+  function mark() {
+    queued = false;
+    const barBottom = toc.getBoundingClientRect().bottom;
+    // a part counts as current once its heading is in the top quarter of the view
+    const line = barBottom + Math.min(160, innerHeight * 0.25);
+    let cur = -1;
+    targets.forEach((t, i) => { if (t && t.getBoundingClientRect().top <= line) cur = i; });
+    // at the end of the page the last parts can never scroll that high: take the last heading on screen
+    if (scrollY + innerHeight >= root.scrollHeight - 4) {
+      targets.forEach((t, i) => { if (t && t.getBoundingClientRect().top < innerHeight - 40) cur = i; });
+    }
+    // only touch the bar when the current part changes or the bar was resized, never while the reader scrolls it sideways
+    if (cur === shown && !refit) return;
+    if (cur !== shown) links.forEach((a, i) => { if (i === cur) a.setAttribute("aria-current", "location"); else a.removeAttribute("aria-current"); });
+    shown = cur; refit = false;
+    const a = links[cur];
+    if (a && (a.offsetLeft < toc.scrollLeft || a.offsetLeft + a.offsetWidth > toc.scrollLeft + toc.clientWidth)) toc.scrollLeft = a.offsetLeft - 40;
+  }
+  const schedule = () => { if (!queued) { queued = true; requestAnimationFrame(mark); } };
+  const resized = () => { refit = true; schedule(); };
+  // the sidebar offset and heading scroll margins follow the bar's real height (it grows with the font size)
+  const setHeight = () => root.style.setProperty("--toc-h", toc.offsetHeight + "px");
+  setHeight();
+  if ("ResizeObserver" in window) new ResizeObserver(() => { setHeight(); resized(); }).observe(toc);
+  addEventListener("scroll", schedule, { passive: true });
+  addEventListener("resize", resized);
+  addEventListener("hashchange", schedule);
+  addEventListener("load", schedule);          // images and fonts can move the headings after the first pass
+  if (document.fonts) document.fonts.ready.then(schedule);
+  schedule();
+})();
+</script>
 </body>
 </html>
