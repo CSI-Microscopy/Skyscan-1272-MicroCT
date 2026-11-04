@@ -1,5 +1,8 @@
 This folder contains manuals and reference documents for the SkyScan 1272 Micro-CT system.
 
+## Interactive guides
+- [Phase retrieval on the SkyScan 1272](https://csi-microscopy.github.io/Skyscan-1272-MicroCT/phase-retrieval.html) – Paganin phase retrieval in NRecon 2.0+: interactive simulator, a real fly projection, and a GPU case study. Bruker's step-by-step method note for this (MN133) is not in this folder.
+
 ## File index
 
 ### Scanner and software manuals
