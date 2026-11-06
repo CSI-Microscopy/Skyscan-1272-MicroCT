@@ -1,7 +1,7 @@
 ## Last Updated: 2024-06-27
 # SkyScan 1272 Micro-CT Standard Operating Procedures (SOPs)
 
-### Quick Start Guide - For detailed instructions, refer to the [SkyScan 1272 User Manual](https://github.com/Faculty-of-Agriculture-CSI-Microscopy/Skyscan-1272-MicroCT/blob/main/manuals/1272_UserManual_v1_2.pdf).
+### Quick Start Guide - For detailed instructions, refer to the [SkyScan 1272 User Manual](manuals/1272_UserManual_v1_2.pdf).
 
 ### Phase contrast enhancement
 - [Phase retrieval on the SkyScan 1272](https://csi-microscopy.github.io/Skyscan-1272-MicroCT/phase-retrieval.html) – teaching page on Paganin phase retrieval (NRecon 2.0+): an interactive simulator that reads a scan `.log` file, a real fly projection, and a GPU case study of full reconstructions comparing phase retrieval with plain smoothing, with the three resulting volumes side by side.

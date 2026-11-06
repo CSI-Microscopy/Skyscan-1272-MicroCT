@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="description" content="Paganin phase retrieval on the SkyScan 1272: an interactive simulator, a real fly projection, and a GPU case study of full reconstructions, written as teaching material for graduate students.">
 <title>SkyScan 1272 Phase Retrieval</title>
+<link rel="canonical" href="https://csi-microscopy.github.io/Skyscan-1272-MicroCT/phase-retrieval.html">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+Condensed:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
@@ -57,6 +58,7 @@ p { margin: 0; max-width: 68ch; }
 .mono { font-family: var(--f-mono); font-variant-numeric: tabular-nums; }
 .back { color: var(--pag); text-decoration: none; }
 .back:hover { text-decoration: underline; }
+.back-links { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 10px; }
 .eyebrow { font: 500 0.72rem/1 var(--f-mono); letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
 header { display: grid; gap: 10px; margin-bottom: 18px; }
 header p { color: var(--muted); }
@@ -258,7 +260,11 @@ dl.qa dd ul { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 
 <div class="wrap" id="top">
   <header>
-    <a class="eyebrow back" href="./">&larr; SkyScan 1272 guide</a>
+    <div class="back-links">
+      <a class="eyebrow back" href="https://csi-microscopy.github.io/Skyscan-1272-MicroCT/">&larr; SkyScan 1272 guide</a>
+      <span class="eyebrow" aria-hidden="true">·</span>
+      <a class="eyebrow back" href="https://csi-microscopy.github.io/">CSI Microscopy home</a>
+    </div>
     <span class="eyebrow">Bruker SkyScan 1272 · NRecon · Paganin method</span>
     <h1>Phase retrieval on the SkyScan 1272</h1>
     <p>Teaching material for graduate students. We explain Paganin phase retrieval with a simulator, apply it to a real projection of a fly, and then test it on full GPU reconstructions of the same scan, including the control that matters: plain smoothing.</p>
