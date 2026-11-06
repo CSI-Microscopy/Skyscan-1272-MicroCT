@@ -1,3 +1,5 @@
+# SkyScan 1272 Manuals
+
 This folder contains manuals and reference documents for the SkyScan 1272 Micro-CT system.
 
 ## Interactive guides
