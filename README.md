@@ -1,4 +1,4 @@
-## Last Updated: 2024-06-27
+## Last Updated: 2026-11-06
 # SkyScan 1272 Micro-CT Standard Operating Procedures (SOPs)
 
 ### Quick Start Guide - For detailed instructions, refer to the [SkyScan 1272 User Manual](manuals/1272_UserManual_v1_2.pdf).
