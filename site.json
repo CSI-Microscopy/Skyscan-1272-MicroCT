@@ -1,0 +1,9 @@
+{
+  "name": "SkyScan 1272 Micro-CT",
+  "short": "SkyScan 1272",
+  "menu": [
+    { "label": "Guide", "href": "./" },
+    { "label": "Manuals", "href": "manuals/" },
+    { "label": "Phase retrieval", "href": "phase-retrieval.html" }
+  ]
+}
