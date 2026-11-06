@@ -1,5 +1,6 @@
 # Builds this repo's Markdown into static pages and deploys them to GitHub Pages,
-# with the shared CSI Microscopy workflow (csi-Microscopy.github.io/tools/build-docs).
+# with the shared CSI Microscopy workflow (csi-Microscopy.github.io/tools/build-docs),
+# pinned to its release tag v1.
 # Needs Settings → Pages → Source: "GitHub Actions"; until then the deploy job
 # fails and the site keeps being served from the branch as before.
 name: Pages
@@ -9,7 +10,7 @@ on:
     branches: [main]
   workflow_dispatch:
   schedule:
-    - cron: '17 4 * * 1'   # weekly, so changes to the shared header/CSS/build reach this site
+    - cron: '17 4 * * 1'   # weekly, so a new release of the shared build (the v1 tag moved) reaches this site
 
 permissions:
   contents: read
@@ -18,7 +19,8 @@ permissions:
 
 jobs:
   site:
-    uses: CSI-Microscopy/csi-Microscopy.github.io/.github/workflows/build-instrument-site.yml@main
+    uses: CSI-Microscopy/csi-Microscopy.github.io/.github/workflows/build-instrument-site.yml@v1
     with:
       repo: Skyscan-1272-MicroCT
+      branch: main          # deploy only from main
       site: site.json

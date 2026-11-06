@@ -1,6 +1,7 @@
 {
   "name": "SkyScan 1272 Micro-CT",
   "short": "SkyScan 1272",
+  "description": "Standard operating procedure for scanning on the SkyScan 1272 Micro-CT at the Faculty of Agriculture CSI Microscopy unit, with the Bruker manuals and a phase-retrieval explainer.",
   "menu": [
     { "label": "Guide", "href": "./" },
     { "label": "Manuals", "href": "manuals/" },
